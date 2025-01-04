@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 using SharpDX.Direct3D11;
 
-namespace SimpleDXApp
+namespace Drawing
 {
     public class TextureLoader
     {

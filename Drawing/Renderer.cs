@@ -12,7 +12,7 @@ using SharpDX.Direct3D;
 using Buffer11 = SharpDX.Direct3D11.Buffer;
 using Device11 = SharpDX.Direct3D11.Device;
 
-namespace SimpleDXApp
+namespace Drawing
 {
     public class Renderer : IDisposable
     {

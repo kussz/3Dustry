@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using SharpDX;
 using SharpDX.DirectInput;
 
-namespace SimpleDXApp
+namespace Drawing
 {
     public class InputHandler
     {

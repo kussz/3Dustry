@@ -20,7 +20,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Assets\Maps\map1.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Assets\Tiles\sand.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Tiles\sand2.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="pixel.hlsl">

@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using SharpDX.Direct3D;
 using Device11 = SharpDX.Direct3D11.Device;
+using Drawing;
 
-namespace SimpleDXApp
+namespace GameMain
 {
     static class Program
     {

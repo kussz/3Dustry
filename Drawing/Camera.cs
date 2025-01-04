@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SharpDX;
 
-namespace SimpleDXApp
+namespace Drawing
 {
     public class Camera : Game3DObject
     {

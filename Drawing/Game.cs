@@ -7,9 +7,10 @@ using System.Windows.Forms;
 using SharpDX;
 
 using SharpDX.Direct3D11;
+using SharpDX.DXGI;
 using SharpDX.Windows;
 
-namespace SimpleDXApp
+namespace Drawing
 {
     public class Game : IDisposable
     {
@@ -17,7 +18,7 @@ namespace SimpleDXApp
         private const float MOVE_STEP = 0.01f;
         private MeshObject _cube;
         private MeshObject[,] _cubes;
-        private MeshObject compound;
+        private MeshObject[] _groundCompound;
         List<Renderer.VertexDataStruct> allVertices = new List<Renderer.VertexDataStruct>();
         List<uint> allIndices = new List<uint>();
         private Camera _camera;
@@ -36,22 +37,33 @@ namespace SimpleDXApp
             _renderForm = new RenderForm();
             _renderForm.UserResized += RenderFormResizedCallback;
             _directX3DGraphics = new DirectX3DGraphics(_renderForm);
+            
             _renderer = new Renderer(_directX3DGraphics);
             _renderer.CreateConstantBuffer();
             _inputHandler = new InputHandler();
-
             Loader loader = new Loader(_directX3DGraphics);
-            _cube = loader.MakeTileSquare(new Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+            Tile[,] map = loader.LoadMap("Assets/Maps/map1.png");
+            _cube = loader.MakeTileSquare(new Vector4(0.0f, 0.0f, 0.0f, 1.0f),Tile.BlackSand);
             int indexOffset = 0;
-            for (int i = 0; i < 10; i++)
-                for (int j = 0; j < 10; j++)
-                {
-                    MeshObject tile = loader.MakeTileSquare(new Vector4(j, 0, i, 1f));
-                    allVertices.AddRange(tile.Vertices); // Предполагается, что у вас есть доступ к вершинам
-                    allIndices.AddRange(tile.Indices.Select(idx => (uint)(idx + indexOffset))); // Корректируем индексы
-                    indexOffset += tile.Vertices.Length;
-                }
-            compound = new MeshObject(_directX3DGraphics, new Vector4(0, 0, 0, 1), 0, 0, 0, allVertices.ToArray(), allIndices.ToArray());
+            List<MeshObject> compoundHolder = new List<MeshObject>();
+            ShaderResourceView view=null;
+            foreach(var k in map.Cast<Tile>().Distinct().Except([Tile.None]))
+            {
+                for (int i = 0; i < map.GetLength(0); i++)
+                    for (int j = 0; j < map.GetLength(1); j++)
+                    {
+                        if (map[i,j]==k)
+                        {
+                            MeshObject tile = loader.MakeTileSquare(new Vector4(j, 0, i, 1f), map[i,j]);
+                            view = tile.Texture;
+                            allVertices.AddRange(tile.Vertices); // Предполагается, что у вас есть доступ к вершинам
+                            allIndices.AddRange(tile.Indices.Select(idx => (uint)(idx + indexOffset))); // Корректируем индексы
+                            indexOffset += tile.Vertices.Length;
+                        }
+                    }
+                compoundHolder.Add(new MeshObject(_directX3DGraphics, new Vector4(0, 0, 0, 1), 0, 0, 0, allVertices.ToArray(), allIndices.ToArray(), view));
+            }
+            _groundCompound = compoundHolder.ToArray();
             _camera = new Camera(new Vector4(0.5f, 2.0f, -5.0f, 1.0f));
             _timeHelper = new TimeHelper();
             loader.Dispose();
@@ -129,9 +141,14 @@ namespace SimpleDXApp
             _renderer.BeginRender();
 
             _renderer.SetPerObjectConstantBuffer(_a, _b);
-            _renderer.UpdatePerObjectConstantBuffers(compound.GetWorldMatrix(),
-                viewMatrix, projectionMatrix);
-            _renderer.RenderMeshObject(compound);
+            foreach (var comp in _groundCompound)
+            {
+                _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, comp.Texture);
+                _renderer.UpdatePerObjectConstantBuffers(comp.GetWorldMatrix(),
+                    viewMatrix, projectionMatrix);
+                _renderer.RenderMeshObject(comp);
+
+            }
             //foreach (var cube in _cubes)
             //{
             //    _renderer.UpdatePerObjectConstantBuffers(cube.GetWorldMatrix(),

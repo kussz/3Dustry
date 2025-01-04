@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SharpDX;
+﻿using SharpDX;
+//using SharpDX.Direct2D1.Effects;
 using SharpDX.Direct3D11;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using Buffer11 = SharpDX.Direct3D11.Buffer;
+using SharpDX.WIC;
 
-namespace SimpleDXApp
+namespace Drawing
 {
     public class Loader : IDisposable
     {
@@ -18,7 +13,7 @@ namespace SimpleDXApp
         {
             _directX3DGraphics = directX3DGraphics;
         }
-        public MeshObject MakeTileSquare(Vector4 position)
+        public MeshObject MakeTileSquare(Vector4 position,Tile type)
         {
             Renderer.VertexDataStruct[] vertices = new Renderer.VertexDataStruct[4]
             {
@@ -47,23 +42,12 @@ namespace SimpleDXApp
             {
                 0, 1, 2,    1,3,2,
             };
-            Texture2D texture = TextureLoader.LoadTexture(_directX3DGraphics.Device, "Assets/Tiles/sand.png");
+            Texture2D texture = TextureLoader.LoadTexture(_directX3DGraphics.Device, Dictionaries.TexturePath(type));
             ShaderResourceView textureView = new ShaderResourceView(_directX3DGraphics.Device, texture);
-            var samplerDescription = new SamplerStateDescription()
-            {
-                Filter = Filter.MinMagMipLinear, // Линейная фильтрация
-                AddressU = TextureAddressMode.Mirror, // Зацикливание текстуры по оси U
-                AddressV = TextureAddressMode.Mirror, // Зацикливание текстуры по оси V
-                AddressW = TextureAddressMode.Mirror, // Зацикливание текстуры по оси W
-                ComparisonFunction = Comparison.Never,
-                MinimumLod = 0,
-                MaximumLod = float.MaxValue
-            };
-            var samplerState = new SamplerState(_directX3DGraphics.Device, samplerDescription);
-            _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, textureView);
-            _directX3DGraphics.DeviceContext.PixelShader.SetSampler(0, samplerState);
+            
+            
             return new MeshObject(_directX3DGraphics, position,
-                0, 0, 0, vertices, indices);
+                0, 0, 0, vertices, indices,textureView);
         }
         public MeshObject MakeCube(Vector4 position, float yaw, float pitch, float roll)
         {
@@ -103,7 +87,7 @@ namespace SimpleDXApp
                     },
                     new Renderer.VertexDataStruct // bottom 6
                     {
-                        position = new Vector4(1.0f, -1.0f, 1.0f, 1.0f), 
+                        position = new Vector4(1.0f, -1.0f, 1.0f, 1.0f),
                         texCoord = new Vector2(0.5f, 1.0f)//black
                     },
                     new Renderer.VertexDataStruct // bottom 7
@@ -272,7 +256,81 @@ namespace SimpleDXApp
             return new MeshObject(_directX3DGraphics, position,
                 yaw, pitch, roll, vertices, indices);
         }
+        public Tile[,] LoadMap(string path)
+        {
+            BitmapSource bitmap = TextureLoader.LoadBitmap(new SharpDX.WIC.ImagingFactory2(), path);
+            int width = bitmap.Size.Width;
+            int height = bitmap.Size.Height;
+            int stride = width * 4; // 4 байта на пиксель (RGBA)
+            // Выделяем память для одномерного массива пикселей
+            int pixelCount = width * height;
+            var pixelArray = new byte[height * stride]; // 4 байта на пиксель (RGBA)
 
+            // Копируем пиксели из BitmapSource в массив
+            bitmap.CopyPixels(pixelArray, stride);
+
+            // Создаем двумерный массив
+            Tile[,] tiles = new Tile[height, width];
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int index = (y * width + x) * 4;
+                    byte r = pixelArray[index];     // Blue
+                    byte g = pixelArray[index + 1]; // Green
+                    byte b = pixelArray[index + 2]; // Red
+                    byte a = pixelArray[index + 3]; // Alpha
+                    string color = ColorToHex(r, g, b, a);
+
+                    tiles[y, x] = Dictionaries.Color(color);
+
+
+                }
+            }
+            return tiles;
+        }
+        private static string ColorToHex(byte r, byte g, byte b, byte a)
+        {
+            // Преобразуем значения в HEX
+            return $"#{r:X2}{g:X2}{b:X2}{a:X2}"; // Формат RGBA
+        }
+        //public static Color[,] BitmapSourceTo2DArray(SharpDX.WIC.BitmapSource bitmapSource)
+        //{
+        //    // Получаем размеры изображения
+        //    int width = bitmapSource.Size.Width;
+        //    int height = bitmapSource.Size.Height;
+
+        //    // Проверка формата изображения
+        //    var pixelFormat = bitmapSource.PixelFormat;
+
+        //    // Выделяем память для одномерного массива пикселей
+        //    int stride = width * 4; // 4 байта на пиксель (RGBA)
+        //    var pixelArray = new byte[height * stride];
+
+        //    // Копируем пиксели из BitmapSource в массив
+        //    bitmapSource.CopyPixels(pixelArray, stride);
+
+        //    // Создаем двумерный массив
+        //    Color[,] colorArray = new Color[height, width];
+
+        //    // Заполняем двумерный массив цветами
+        //    for (int y = 0; y < height; y++)
+        //    {
+        //        for (int x = 0; x < width; x++)
+        //        {
+        //            int index = (y * width + x) * 4;
+        //            byte b = pixelArray[index];     // Blue
+        //            byte g = pixelArray[index + 1]; // Green
+        //            byte r = pixelArray[index + 2]; // Red
+        //            byte a = pixelArray[index + 3]; // Alpha
+
+        //            // Создаем объект Color (или используйте другую структуру)
+        //            colorArray[y, x] = Color.FromArgb(a, r, g, b);
+        //        }
+        //    }
+
+        //    return colorArray;
+        //}
         public void Dispose()
         {
 

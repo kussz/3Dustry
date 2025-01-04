@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SharpDX;
+﻿using SharpDX;
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using SharpDX.Windows;
 using Device11 = SharpDX.Direct3D11.Device;
 
-namespace SimpleDXApp
+namespace Drawing
 {
     public class DirectX3DGraphics : IDisposable
     {
@@ -121,6 +116,19 @@ namespace SimpleDXApp
                 CpuAccessFlags = CpuAccessFlags.None,
                 OptionFlags = ResourceOptionFlags.None
             };
+            var samplerDescription = new SamplerStateDescription()
+            {
+                Filter = Filter.MinMagMipLinear, // Линейная фильтрация
+                AddressU = TextureAddressMode.Mirror, // Зацикливание текстуры по оси U
+                AddressV = TextureAddressMode.Mirror, // Зацикливание текстуры по оси V
+                AddressW = TextureAddressMode.Mirror, // Зацикливание текстуры по оси W
+                ComparisonFunction = Comparison.Never,
+                MinimumLod = 0,
+                MaximumLod = float.MaxValue
+            };
+            var samplerState = new SamplerState(Device, samplerDescription);
+
+            DeviceContext.PixelShader.SetSampler(0, samplerState);
         }
 
         public void Resize()
