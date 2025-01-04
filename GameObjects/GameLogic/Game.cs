@@ -120,9 +120,9 @@ namespace GameObjects.GameLogic
             
             Matrix viewMatrix = _camera.GetViewMatrix();
             Matrix projectionMatrix = _camera.GetProjectionMatrix();
-            Vector3 hitPoint = _camera.IntersectRayWithPlane(_directX3DGraphics.DeviceContext.Rasterizer.GetViewports<Viewport>()[0]);
+            Vector3 hitPoint = _camera.IntersectRayWithPlane(40f);
             entity.Mesh.Position=new Vector4(hitPoint.X,0, hitPoint.Z,1);
-            _renderForm.Text = "X: " + _camera.Yaw + " Y: " + _camera.Pitch + " Z: " + hitPoint.Z;
+            _renderForm.Text = "X: " + hitPoint.X + " Y: " + _camera.Pitch + " Z: " + hitPoint.Z;
             _renderer.BeginRender();
 
             _renderer.SetPerObjectConstantBuffer(_a, _b);

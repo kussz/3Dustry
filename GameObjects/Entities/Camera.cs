@@ -39,42 +39,40 @@ namespace GameObjects.Entities
                 (Vector3)_position + viewTo, viewUp);
         }
 
-        public Vector3 IntersectRayWithPlane(Viewport viewport)
+        public Vector3 IntersectRayWithPlane(float distance)
         {
-            (Vector3 rayOrigin, Vector3 rayDirection) = UnprojectMouseToRay(Yaw, -Pitch, viewport, GetProjectionMatrix(), GetViewMatrix());
-            Vector3 planeNormal = new Vector3(0, 1, 0);
-            float planeD = 0;
-            float denom = Vector3.Dot(planeNormal, rayDirection);
-            if (Math.Abs(denom) > 1e-6f)
-            {
-                float t = -(Vector3.Dot(planeNormal, rayOrigin) + planeD) / denom;
-                return rayOrigin + t * rayDirection;
-            }
-            return Vector3.Zero; // Нет пересечения
+            Vector3 lookDirection = new Vector3(
+            (float)(Math.Cos(-Pitch) * Math.Sin(Yaw)),
+            (float)Math.Sin(-Pitch),
+            (float)(Math.Cos(-Pitch) * Math.Cos(Yaw))
+            );
+            lookDirection.Normalize();
+
+            Vector3 intersectionPoint = IntersectWithPlaneY((Vector3)Position, lookDirection, 0);
+            if (Vector3.Distance((Vector3)Position, intersectionPoint) > distance)
+                return Vector3.Zero;
+            return intersectionPoint;
         }
 
-        public  (Vector3 rayOrigin, Vector3 rayDirection) UnprojectMouseToRay(
-        float mouseX, float mouseY,
-        Viewport viewport,
-        Matrix projectionMatrix,
-        Matrix viewMatrix)
+        static Vector3 IntersectWithPlaneY(Vector3 origin, Vector3 direction, float planeY)
         {
-            // Преобразование координат мыши в диапазон [-1, 1]
-            float pointX = (mouseX / viewport.Width) * 2.0f - 1.0f;
-            float pointY = 1.0f - (mouseY / viewport.Height) * 2.0f;
+            // Проверяем, чтобы направление не было параллельно плоскости
+            if (Math.Abs(direction.Y) < 1e-6)
+            {
+                return Vector3.Zero; // Нет пересечения
+            }
 
-            // Координаты в пространстве устройства (Near и Far)
-            Vector3 nearPoint = new Vector3(pointX, pointY, 0.0f);
-            Vector3 farPoint = new Vector3(pointX, pointY, 1.0f);
+            // Вычисляем параметр t
+            float t = (planeY - origin.Y) / direction.Y;
 
-            // Обратное преобразование (Unproject)
-            Matrix viewProjectionInverse = Matrix.Invert(viewMatrix * projectionMatrix);
-            Vector3 nearWorld = Vector3.Unproject(nearPoint, viewport.X, viewport.Y, viewport.Width, viewport.Height, 0.0f, 1.0f, viewProjectionInverse);
-            Vector3 farWorld = Vector3.Unproject(farPoint, viewport.X, viewport.Y, viewport.Width, viewport.Height, 0.0f, 1.0f, viewProjectionInverse);
+            // Если пересечение позади камеры, то игнорируем
+            if (t < 0)
+            {
+                return Vector3.Zero;
+            }
 
-            // Направление луча
-            Vector3 rayDirection = Vector3.Normalize(farWorld - nearWorld);
-            return (nearWorld, rayDirection);
+            // Вычисляем точку пересечения
+            return origin + t * direction;
         }
     }
 }
