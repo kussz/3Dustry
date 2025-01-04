@@ -5,7 +5,7 @@ using SharpDX.DXGI;
 using SharpDX.Windows;
 using Device11 = SharpDX.Direct3D11.Device;
 
-namespace Drawing
+namespace GameObjects.Drawing
 {
     public class DirectX3DGraphics : IDisposable
     {
@@ -129,6 +129,25 @@ namespace Drawing
             var samplerState = new SamplerState(Device, samplerDescription);
 
             DeviceContext.PixelShader.SetSampler(0, samplerState);
+            var blendStateDesc = new BlendStateDescription
+            {
+                AlphaToCoverageEnable = false,
+                IndependentBlendEnable = false
+            };
+            blendStateDesc.RenderTarget[0] = new RenderTargetBlendDescription
+            {
+                IsBlendEnabled = true,
+                SourceBlend = BlendOption.SourceAlpha,
+                DestinationBlend = BlendOption.InverseSourceAlpha,
+                BlendOperation = BlendOperation.Add,
+                SourceAlphaBlend = BlendOption.One,
+                DestinationAlphaBlend = BlendOption.Zero,
+                AlphaBlendOperation = BlendOperation.Add,
+                RenderTargetWriteMask = ColorWriteMaskFlags.All
+            };
+
+            var blendState = new BlendState(Device, blendStateDesc);
+            DeviceContext.OutputMerger.SetBlendState(blendState);
         }
 
         public void Resize()
@@ -142,7 +161,7 @@ namespace Drawing
                 _renderForm.ClientSize.Width, _renderForm.ClientSize.Height,
                 Format.Unknown, SwapChainFlags.None);
 
-            _backBuffer = Texture2D.FromSwapChain<Texture2D>(_swapChain, 0);
+            _backBuffer = SharpDX.Direct3D11.Resource.FromSwapChain<Texture2D>(_swapChain, 0);
 
             _renderTargetView = new RenderTargetView(_device, _backBuffer);
 
@@ -151,7 +170,7 @@ namespace Drawing
             _depthStencilBuffer = new Texture2D(_device, _depthStencilBufferDescription);
 
             _depthStencilView = new DepthStencilView(_device, _depthStencilBuffer);
-
+            
             _deviceContext.Rasterizer.SetViewport(
                 new Viewport(0, 0,
                 _renderForm.ClientSize.Width, _renderForm.ClientSize.Height,

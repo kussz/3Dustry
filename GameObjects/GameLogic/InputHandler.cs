@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 using SharpDX;
 using SharpDX.DirectInput;
 
-namespace Drawing
+namespace GameObjects.GameLogic
 {
     public class InputHandler
     {
@@ -14,7 +15,7 @@ namespace Drawing
         private Keyboard keyboard;
         private Mouse mouse;
         private KeyboardState keyboardState;
-        private double _border = Math.PI * 50;
+        private double _border = Math.PI/2;
         public bool Left { get; private set; }
         public bool Right { get; private set; }
         public bool Forward { get; private set; }
@@ -29,9 +30,9 @@ namespace Drawing
         public float MouseX { get; private set; }
         public float MouseY { get; private set; }
         public bool Escape { get; private set; } = false;
-        public float prevTime=Environment.TickCount;
+        public float prevTime = Environment.TickCount;
         public float newTime = Environment.TickCount;
-        public float DeltaTime { get { return newTime - prevTime; }}
+        public float DeltaTime { get { return newTime - prevTime; } }
 
         public InputHandler()
         {
@@ -45,7 +46,7 @@ namespace Drawing
         public void Update()
         {
             prevTime = newTime;
-            newTime= Environment.TickCount;
+            newTime = Environment.TickCount;
             // Обновляем состояние клавиатуры
             keyboardState = keyboard.GetCurrentState();
 
@@ -96,9 +97,11 @@ namespace Drawing
             if (keyboardState.IsPressed(Key.Escape))
                 Escape = true;
             MouseState state = mouse.GetCurrentState();
-            MouseX += state.X;
-            MouseY += state.Y;
-            MouseY=(float)Math.Min(Math.Max(-_border, MouseY), _border);
+            MouseX += state.X/100f;
+            MouseY += state.Y/100f;
+            MouseY = (float)Math.Min(Math.Max(-_border, MouseY), _border);
+            if (MouseX > MathUtil.Pi) MouseX -= MathUtil.TwoPi;
+            else if (MouseX < -MathUtil.Pi) MouseX += MathUtil.TwoPi;
         }
     }
 }

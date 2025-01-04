@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using SharpDX.Direct3D;
 using Device11 = SharpDX.Direct3D11.Device;
-using Drawing;
+using GameObjects.GameLogic;
 
 namespace GameMain
 {

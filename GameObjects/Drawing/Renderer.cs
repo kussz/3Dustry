@@ -12,7 +12,7 @@ using SharpDX.Direct3D;
 using Buffer11 = SharpDX.Direct3D11.Buffer;
 using Device11 = SharpDX.Direct3D11.Device;
 
-namespace Drawing
+namespace GameObjects.Drawing
 {
     public class Renderer : IDisposable
     {
@@ -49,7 +49,6 @@ namespace Drawing
             _directX3DGraphics = directX3DGraphics;
             _device = _directX3DGraphics.Device;
             _deviceContext = _directX3DGraphics.DeviceContext;
-
             CompilationResult vertexShaderByteCode =
                 ShaderBytecode.CompileFromFile("vertex.hlsl",
                 "vertexShader", "vs_5_0");
@@ -77,7 +76,7 @@ namespace Drawing
             _deviceContext.InputAssembler.InputLayout = _inputLayout;
             _deviceContext.VertexShader.Set(_vertexShader);
             _deviceContext.PixelShader.Set(_pixelShader);
-            
+
         }
 
         public void CreateConstantBuffer()

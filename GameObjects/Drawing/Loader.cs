@@ -3,7 +3,7 @@
 using SharpDX.Direct3D11;
 using SharpDX.WIC;
 
-namespace Drawing
+namespace GameObjects.Drawing
 {
     public class Loader : IDisposable
     {
@@ -13,28 +13,32 @@ namespace Drawing
         {
             _directX3DGraphics = directX3DGraphics;
         }
-        public MeshObject MakeTileSquare(Vector4 position,Tile type)
+        public Loader()
+        {
+
+        }
+        public MeshObject MakeTileSquare(Vector4 position, Tile type)
         {
             Renderer.VertexDataStruct[] vertices = new Renderer.VertexDataStruct[4]
             {
                 new Renderer.VertexDataStruct
                 {
-                    position = new Vector4(position.X,0,position.Z,1.0f),
+                    position = new Vector4(position.X,position.Y,position.Z,1.0f),
                     texCoord= new Vector2(0,0),
                 },
                 new Renderer.VertexDataStruct
                 {
-                    position = new Vector4(position.X+1,0,position.Z,1.0f),
+                    position = new Vector4(position.X+1,position.Y,position.Z,1.0f),
                     texCoord= new Vector2(1,0),
                 },
                 new Renderer.VertexDataStruct
                 {
-                    position = new Vector4(position.X,0,position.Z+1,1.0f),
+                    position = new Vector4(position.X,position.Y,position.Z+1,1.0f),
                     texCoord= new Vector2(0,1),
                 },
                 new Renderer.VertexDataStruct
                 {
-                    position = new Vector4(position.X+1,0,position.Z+1,1.0f),
+                    position = new Vector4(position.X+1,position.Y,position.Z+1,1.0f),
                     texCoord= new Vector2(1,1),
                 },
             };
@@ -42,12 +46,11 @@ namespace Drawing
             {
                 0, 1, 2,    1,3,2,
             };
-            Texture2D texture = TextureLoader.LoadTexture(_directX3DGraphics.Device, Dictionaries.TexturePath(type));
-            ShaderResourceView textureView = new ShaderResourceView(_directX3DGraphics.Device, texture);
-            
-            
+
+
+
             return new MeshObject(_directX3DGraphics, position,
-                0, 0, 0, vertices, indices,textureView);
+                0, 0, 0, vertices, indices);
         }
         public MeshObject MakeCube(Vector4 position, float yaw, float pitch, float roll)
         {
@@ -58,42 +61,42 @@ namespace Drawing
                     new Renderer.VertexDataStruct // top 0
                     {
                         position = new Vector4(-1.0f, 1.0f, 1.0f, 1.0f),
-                        texCoord = new Vector2(0.0f, 1.0f) //yellow
+                        texCoord = new Vector2(8/48f,40/48f) //yellow
                     },
                     new Renderer.VertexDataStruct // top 1
                     {
                         position = new Vector4(-1.0f, 1.0f, -1.0f, 1.0f),
-                        texCoord = new Vector2(0.0f, 0.0f) //red
+                        texCoord = new Vector2(8/48f, 8/48f) //red
                     },
                     new Renderer.VertexDataStruct // top 2
                     {
                         position = new Vector4(1.0f, 1.0f, -1.0f, 1.0f),
-                        texCoord = new Vector2(1.0f, 0.0f)//cyan
+                        texCoord = new Vector2(40/48f, 8/48f)//cyan
                     },
                     new Renderer.VertexDataStruct // top 3
                     {
                         position = new Vector4(1.0f, 1.0f, 1.0f, 1.0f),
-                        texCoord = new Vector2(1.0f,1.0f)//magenta
+                        texCoord = new Vector2(40/48f,40/48f)//magenta
                     },
                     new Renderer.VertexDataStruct // bottom 4
                     {
                         position = new Vector4(-1.0f, -1.0f, -1.0f, 1.0f),
-                        texCoord = new Vector2(0.5f, 0.0f)//green
+                        texCoord = new Vector2(0f, 0.0f)//green
                     },
                     new Renderer.VertexDataStruct // bottom 5
                     {
                         position = new Vector4(-1.0f, -1.0f, 1.0f, 1.0f),
-                        texCoord = new Vector2(0.0f, 0.5f)//blue
+                        texCoord = new Vector2(0.0f, 1f)//blue
                     },
                     new Renderer.VertexDataStruct // bottom 6
                     {
                         position = new Vector4(1.0f, -1.0f, 1.0f, 1.0f),
-                        texCoord = new Vector2(0.5f, 1.0f)//black
+                        texCoord = new Vector2(1f, 1.0f)//black
                     },
                     new Renderer.VertexDataStruct // bottom 7
                     {
                         position = new Vector4(1.0f, -1.0f, -1.0f, 1.0f),
-                        texCoord = new Vector2(1f, 0.5f)//white
+                        texCoord = new Vector2(1f, 0f)//white
                     }
                };
             uint[] indices = new uint[]
@@ -110,22 +113,6 @@ namespace Drawing
                 1,0,5
             };
             // Создание вершинного буфера с данными
-
-            Texture2D texture = TextureLoader.LoadTexture(_directX3DGraphics.Device, "Assets/Tiles/sand.png");
-            ShaderResourceView textureView = new ShaderResourceView(_directX3DGraphics.Device, texture);
-            var samplerDescription = new SamplerStateDescription()
-            {
-                Filter = Filter.MinMagMipLinear, // Линейная фильтрация
-                AddressU = TextureAddressMode.Mirror, // Зацикливание текстуры по оси U
-                AddressV = TextureAddressMode.Mirror, // Зацикливание текстуры по оси V
-                AddressW = TextureAddressMode.Mirror, // Зацикливание текстуры по оси W
-                ComparisonFunction = Comparison.Never,
-                MinimumLod = 0,
-                MaximumLod = float.MaxValue
-            };
-            var samplerState = new SamplerState(_directX3DGraphics.Device, samplerDescription);
-            _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, textureView);
-            _directX3DGraphics.DeviceContext.PixelShader.SetSampler(0, samplerState);
             return new MeshObject(_directX3DGraphics, position,
                 yaw, pitch, roll, vertices, indices);
         }
@@ -159,7 +146,7 @@ namespace Drawing
         {
             List<uint> indices = new List<uint>();
             uint ptr = 0;
-            for (uint j = 0; j < (n - 1) * ((n - 1) * 6); j += (n - 1) * 6)
+            for (uint j = 0; j < (n - 1) * (n - 1) * 6; j += (n - 1) * 6)
             {
 
                 for (uint i = 0; i < (n - 1) * 6; i += 6)
@@ -256,44 +243,7 @@ namespace Drawing
             return new MeshObject(_directX3DGraphics, position,
                 yaw, pitch, roll, vertices, indices);
         }
-        public Tile[,] LoadMap(string path)
-        {
-            BitmapSource bitmap = TextureLoader.LoadBitmap(new SharpDX.WIC.ImagingFactory2(), path);
-            int width = bitmap.Size.Width;
-            int height = bitmap.Size.Height;
-            int stride = width * 4; // 4 байта на пиксель (RGBA)
-            // Выделяем память для одномерного массива пикселей
-            int pixelCount = width * height;
-            var pixelArray = new byte[height * stride]; // 4 байта на пиксель (RGBA)
 
-            // Копируем пиксели из BitmapSource в массив
-            bitmap.CopyPixels(pixelArray, stride);
-
-            // Создаем двумерный массив
-            Tile[,] tiles = new Tile[height, width];
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    int index = (y * width + x) * 4;
-                    byte r = pixelArray[index];     // Blue
-                    byte g = pixelArray[index + 1]; // Green
-                    byte b = pixelArray[index + 2]; // Red
-                    byte a = pixelArray[index + 3]; // Alpha
-                    string color = ColorToHex(r, g, b, a);
-
-                    tiles[y, x] = Dictionaries.Color(color);
-
-
-                }
-            }
-            return tiles;
-        }
-        private static string ColorToHex(byte r, byte g, byte b, byte a)
-        {
-            // Преобразуем значения в HEX
-            return $"#{r:X2}{g:X2}{b:X2}{a:X2}"; // Формат RGBA
-        }
         //public static Color[,] BitmapSourceTo2DArray(SharpDX.WIC.BitmapSource bitmapSource)
         //{
         //    // Получаем размеры изображения

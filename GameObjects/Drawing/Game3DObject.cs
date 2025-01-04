@@ -5,12 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using SharpDX;
 
-namespace Drawing
+namespace GameObjects.Drawing
 {
     public class Game3DObject
     {
         internal Vector4 _position;
-        public Vector4 Position { get => _position; }
+        public Vector4 Position { get => _position; set => _position = value; }
 
         internal float _yaw;
         public float Yaw { get => _yaw; set => _yaw = value; }
@@ -56,6 +56,7 @@ namespace Drawing
         {
             _position.X += deltaX;
             _position.Y += deltaY;
+            _position.Y = Math.Max(0.5f, _position.Y);
             _position.Z += deltaZ;
         }
 
@@ -65,7 +66,7 @@ namespace Drawing
             _position.Y = y;
             _position.Z = z;
         }
-        
+
 
         public Matrix GetWorldMatrix()
         {

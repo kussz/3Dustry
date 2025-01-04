@@ -8,7 +8,7 @@ using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using Buffer11 = SharpDX.Direct3D11.Buffer;
 
-namespace Drawing
+namespace GameObjects.Drawing
 {
     public class MeshObject : Game3DObject, IDisposable
     {
@@ -32,8 +32,8 @@ namespace Drawing
 
         public MeshObject(DirectX3DGraphics directX3DGraphics,
             Vector4 position, float yaw, float pitch, float roll,
-            Renderer.VertexDataStruct[] vertices,uint[] indices, ShaderResourceView? texture)
-            : this(directX3DGraphics, position, yaw, pitch, roll,vertices,indices)
+            Renderer.VertexDataStruct[] vertices, uint[] indices, ShaderResourceView? texture)
+            : this(directX3DGraphics, position, yaw, pitch, roll, vertices, indices)
         {
             _texture = texture;
 
@@ -73,7 +73,7 @@ namespace Drawing
 
             for (int i = 0; i < _vertices.Length; i++)
             {
-                transformedVertices[i] =new Renderer.VertexDataStruct { position = Vector4.Transform(_vertices[i].position, translationMatrix), texCoord = _vertices[i].texCoord };
+                transformedVertices[i] = new Renderer.VertexDataStruct { position = Vector4.Transform(_vertices[i].position, translationMatrix), texCoord = _vertices[i].texCoord };
             }
             return transformedVertices;
         }

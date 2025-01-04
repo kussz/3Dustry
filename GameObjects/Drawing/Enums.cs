@@ -4,13 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Drawing
+namespace GameObjects.Drawing
 {
     public enum Tile
     {
         None,
         Sand,
         BlackSand,
-        Copper
+        Copper,
+        Lead
+    }
+    public enum EntityType
+    {
+        None,
+        Core
     }
 }

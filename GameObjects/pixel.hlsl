@@ -9,4 +9,5 @@ SamplerState sampler0 : register(s0);
 float4 pixelShader(pixelData input) : SV_Target
 {
     return texture0.Sample(sampler0, input.TexCoord);
+    
 }
