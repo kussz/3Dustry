@@ -8,6 +8,7 @@ struct pixelData
 {
 	float4 position : SV_POSITION;
     float2 TexCoord : TEXCOORD0;
+    float4 worldposition : TEXCOORD1;
 };
 
 cbuffer perObjectData : register(b0) {
@@ -19,7 +20,8 @@ cbuffer perObjectData : register(b0) {
 
 pixelData vertexShader(vertexData input) {
 	pixelData output = (pixelData)0;
-	float4 position = input.position;
+    output.worldposition = input.position;
+    float4 position = input.position;
 
 	float scale = 0.5f * sin(time * 0.785f) + 1.0f;
 	if (timeScaling > 0)

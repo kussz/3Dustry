@@ -1,4 +1,5 @@
 ﻿using GameObjects.Drawing;
+using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +10,10 @@ namespace GameObjects.Entities
 {
     public class Core : Entity
     {
-        public Core(Loader loader) : base()
+        public Core(Loader loader, Vector2 position) : base(position, new Vector2(2,1),loader)
         {
             Type = EntityType.Core;
-            Size=new SharpDX.Vector2(1,1);
-            Mesh = loader.MakeCube(new SharpDX.Vector4(0, 0, 0, 1), 0, 0, 0);
+            
         }
     }
 }

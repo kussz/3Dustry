@@ -52,50 +52,52 @@ namespace GameObjects.Drawing
             return new MeshObject(_directX3DGraphics, position,
                 0, 0, 0, vertices, indices);
         }
-        public MeshObject MakeCube(Vector4 position, float yaw, float pitch, float roll)
+        public MeshObject MakeCube(Vector4 position,Vector2 size, float yaw, float pitch, float roll)
         {
+            float deltaWidth = size[0];
+            float height = size[1];
             Renderer.VertexDataStruct[] vertices =
                new Renderer.VertexDataStruct[8]
                {
 
                     new Renderer.VertexDataStruct // top 0
                     {
-                        position = new Vector4(-1.0f, 1.0f, 1.0f, 1.0f),
+                        position = new Vector4(0, height, deltaWidth, 1.0f),
                         texCoord = new Vector2(8/48f,40/48f) //yellow
                     },
                     new Renderer.VertexDataStruct // top 1
                     {
-                        position = new Vector4(-1.0f, 1.0f, -1.0f, 1.0f),
+                        position = new Vector4(0, height, 0, 1.0f),
                         texCoord = new Vector2(8/48f, 8/48f) //red
                     },
                     new Renderer.VertexDataStruct // top 2
                     {
-                        position = new Vector4(1.0f, 1.0f, -1.0f, 1.0f),
+                        position = new Vector4(deltaWidth, height, 0, 1.0f),
                         texCoord = new Vector2(40/48f, 8/48f)//cyan
                     },
                     new Renderer.VertexDataStruct // top 3
                     {
-                        position = new Vector4(1.0f, 1.0f, 1.0f, 1.0f),
+                        position = new Vector4(deltaWidth, height, deltaWidth, 1.0f),
                         texCoord = new Vector2(40/48f,40/48f)//magenta
                     },
                     new Renderer.VertexDataStruct // bottom 4
                     {
-                        position = new Vector4(-1.0f, -1.0f, -1.0f, 1.0f),
+                        position = new Vector4(0, 0, 0, 1.0f),
                         texCoord = new Vector2(0f, 0.0f)//green
                     },
                     new Renderer.VertexDataStruct // bottom 5
                     {
-                        position = new Vector4(-1.0f, -1.0f, 1.0f, 1.0f),
+                        position = new Vector4(0, 0,deltaWidth, 1.0f),
                         texCoord = new Vector2(0.0f, 1f)//blue
                     },
                     new Renderer.VertexDataStruct // bottom 6
                     {
-                        position = new Vector4(1.0f, -1.0f, 1.0f, 1.0f),
+                        position = new Vector4(deltaWidth, 0, deltaWidth, 1.0f),
                         texCoord = new Vector2(1f, 1.0f)//black
                     },
                     new Renderer.VertexDataStruct // bottom 7
                     {
-                        position = new Vector4(1.0f, -1.0f, -1.0f, 1.0f),
+                        position = new Vector4(deltaWidth, 0, 0, 1.0f),
                         texCoord = new Vector2(1f, 0f)//white
                     }
                };

@@ -39,7 +39,7 @@ namespace GameObjects.Entities
                 (Vector3)_position + viewTo, viewUp);
         }
 
-        public Vector3 IntersectRayWithPlane(float distance)
+        public Vector3 IntersectRayWithPlane(float distance,float planeY)
         {
             Vector3 lookDirection = new Vector3(
             (float)(Math.Cos(-Pitch) * Math.Sin(Yaw)),
@@ -48,7 +48,7 @@ namespace GameObjects.Entities
             );
             lookDirection.Normalize();
 
-            Vector3 intersectionPoint = IntersectWithPlaneY((Vector3)Position, lookDirection, 0);
+            Vector3 intersectionPoint = IntersectWithPlaneY((Vector3)Position, lookDirection, planeY);
             if (Vector3.Distance((Vector3)Position, intersectionPoint) > distance)
                 return Vector3.Zero;
             return intersectionPoint;

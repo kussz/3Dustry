@@ -31,7 +31,10 @@ namespace GameObjects.Drawing
             public float b;
             public Vector2 _padding;
         }
-
+        public struct ConstantBuffer
+        {
+            public float Alpha;
+        }
         private DirectX3DGraphics _directX3DGraphics;
         private Device11 _device;
         private DeviceContext _deviceContext;

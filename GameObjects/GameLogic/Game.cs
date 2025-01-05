@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -24,7 +25,9 @@ namespace GameObjects.GameLogic
         private MeshObject[] _oreCompound;
         private Camera _camera;
 
-        Entity entity;
+        private Loader _loader;
+        Entity _entity;
+        List<Entity> _entities;
         private DirectX3DGraphics _directX3DGraphics;
         private Renderer _renderer;
         private InputHandler _inputHandler;
@@ -43,16 +46,15 @@ namespace GameObjects.GameLogic
             _renderer = new Renderer(_directX3DGraphics);
             _renderer.CreateConstantBuffer();
             _inputHandler = new InputHandler();
-            Loader loader = new Loader(_directX3DGraphics);
-            entity = new Core(loader);
-            MapLoader mapLoader = new MapLoader(_directX3DGraphics, loader);
+            _loader = new Loader(_directX3DGraphics);
+            _entity = new Core(_loader,new Vector2(0,0));
+            MapLoader mapLoader = new MapLoader(_directX3DGraphics, _loader);
             Tile[][,] fullmap = mapLoader.LoadMap("map2");
+            _entities = new List<Entity>();
             _groundCompound = mapLoader.GetCompoundMap(fullmap[0], 0);
-            _oreCompound = mapLoader.GetCompoundMap(fullmap[1], 0.1f);
-            _camera = new Camera(new Vector4(0.5f, 2.0f, -5.0f, 1.0f));
+            _oreCompound = mapLoader.GetCompoundMap(fullmap[1], 0.01f);
+            _camera = new Camera(new Vector4(fullmap[0].GetLength(0)/2, 5.0f, fullmap[0].GetLength(1)/2, 1.0f));
             _timeHelper = new TimeHelper();
-            loader.Dispose();
-            loader = null;
         }
 
         public void RenderFormResizedCallback(object sender, EventArgs args)
@@ -66,6 +68,12 @@ namespace GameObjects.GameLogic
 
         public void RenderLoopCallback()
         {
+            //var center = _renderForm.PointToScreen(new System.Drawing.Point(
+            //        _renderForm.Width / 2,
+            //        _renderForm.Height / 2
+            //    ));
+            //System.Windows.Forms.Cursor.Position = center;
+
             if (_inputHandler.Escape)
                 Environment.Exit(0);
             if (_firstRun)
@@ -97,20 +105,11 @@ namespace GameObjects.GameLogic
                 zstep += step * _timeHelper.DeltaT;
             if (_inputHandler.Down)
                 zstep -= step * _timeHelper.DeltaT;
-            //if (_inputHandler.Aplus)
-            //    astep += numStep;
-            //if (_inputHandler.Aminus)
-            //    astep -= numStep;
-            //if (_inputHandler.Bplus)
-            //    bstep += numStep;
-            //if (_inputHandler.Bminus)
-            //    bstep -= numStep;
-            //_a += astep;
-            //_b += bstep;
-            //if (_a < 0.1f)
-            //    _a = 0.1f;
-            //if (_b < 0.1f)
-            //    _b = 0.1f;
+            if(_inputHandler.MouseClick)
+            {
+                _entities.Add(_entity);
+                _entity = new Core(_loader,new Vector2(0,0));
+            }
             _camera.MoveBy(ystep * (float)Math.Sin(_camera._yaw), zstep, ystep * (float)Math.Cos(_camera._yaw));
             _camera.MoveBy(xstep * (float)Math.Sin(_camera._yaw - Math.PI / 2), zstep, xstep * (float)Math.Cos(_camera._yaw - Math.PI / 2));
             _camera.PitchBy(_inputHandler.MouseY);
@@ -120,11 +119,10 @@ namespace GameObjects.GameLogic
             
             Matrix viewMatrix = _camera.GetViewMatrix();
             Matrix projectionMatrix = _camera.GetProjectionMatrix();
-            Vector3 hitPoint = _camera.IntersectRayWithPlane(40f);
-            entity.Mesh.Position=new Vector4(hitPoint.X,0, hitPoint.Z,1);
-            _renderForm.Text = "X: " + hitPoint.X + " Y: " + _camera.Pitch + " Z: " + hitPoint.Z;
+            Vector3 hitPoint = _camera.IntersectRayWithPlane(40f, _entity.Size[1]);
+            _entity.Mesh.MoveTo((float)Math.Floor(hitPoint.X - _entity.Size.X / 2), 0, (float)Math.Floor(hitPoint.Z - _entity.Size.Y / 2));
+            _renderForm.Text = "X: " + _entity.Mesh.Position.X + " Y: " + _camera.Pitch + " Z: " + _entity.Mesh.Position.Z;
             _renderer.BeginRender();
-
             _renderer.SetPerObjectConstantBuffer(_a, _b);
             foreach (var comp in _groundCompound)
             {
@@ -134,6 +132,31 @@ namespace GameObjects.GameLogic
                 _renderer.RenderMeshObject(comp);
 
             }
+            
+            foreach (var entity in _entities)
+            {
+                ShaderResourceView textur = Dictionaries.GetTexture(_entity.Type);
+                if (textur == null)
+                {
+                    Dictionaries.SetTexture(_entity.Type, TextureLoader.GetEntityTexture(_directX3DGraphics, _entity.Type));
+                    textur = Dictionaries.GetTexture(_entity.Type);
+                }
+                _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, textur);
+                _renderer.UpdatePerObjectConstantBuffers(entity.Mesh.GetWorldMatrix(),
+                    viewMatrix, projectionMatrix);
+                _renderer.RenderMeshObject(entity.Mesh);
+                
+            }
+            ShaderResourceView texture = Dictionaries.GetTexture(_entity.Type);
+            if(texture == null)
+            {
+                Dictionaries.SetTexture(_entity.Type,TextureLoader.GetEntityTexture(_directX3DGraphics,_entity.Type));
+                texture = Dictionaries.GetTexture(_entity.Type);
+            }
+            _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, texture);
+            _renderer.UpdatePerObjectConstantBuffers(_entity.Mesh.GetWorldMatrix(),
+                viewMatrix, projectionMatrix);
+            _renderer.RenderMeshObject(_entity.Mesh);
             foreach (var comp in _oreCompound)
             {
                 _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, comp.Texture);
@@ -142,16 +165,6 @@ namespace GameObjects.GameLogic
                 _renderer.RenderMeshObject(comp);
 
             }
-            ShaderResourceView texture = Dictionaries.GetTexture(entity.Type);
-            if(texture == null)
-            {
-                Dictionaries.SetTexture(entity.Type,TextureLoader.GetEntityTexture(_directX3DGraphics,entity.Type));
-                texture = Dictionaries.GetTexture(entity.Type);
-            }
-            _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, texture);
-            _renderer.UpdatePerObjectConstantBuffers(entity.Mesh.GetWorldMatrix(),
-                viewMatrix, projectionMatrix);
-            _renderer.RenderMeshObject(entity.Mesh);
 
 
 
@@ -177,5 +190,9 @@ namespace GameObjects.GameLogic
             _renderer.Dispose();
             _directX3DGraphics.Dispose();
         }
+
+
+
+
     }
 }

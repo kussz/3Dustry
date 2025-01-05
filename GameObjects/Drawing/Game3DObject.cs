@@ -56,7 +56,7 @@ namespace GameObjects.Drawing
         {
             _position.X += deltaX;
             _position.Y += deltaY;
-            _position.Y = Math.Max(0.5f, _position.Y);
+            _position.Y = Math.Max(5f, _position.Y);
             _position.Z += deltaZ;
         }
 
@@ -66,6 +66,7 @@ namespace GameObjects.Drawing
             _position.Y = y;
             _position.Z = z;
         }
+        
 
 
         public Matrix GetWorldMatrix()
