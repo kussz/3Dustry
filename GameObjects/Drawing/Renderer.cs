@@ -46,7 +46,7 @@ namespace GameObjects.Drawing
         private InputLayout _inputLayout;
 
         private PerObjectConstantBuffer _perObjectConstantBuffer;
-        private Buffer11 _perObjectConstantBufferObject;
+        private Buffer11? _perObjectConstantBufferObject;
 
         public Renderer(DirectX3DGraphics directX3DGraphics)
         {

@@ -16,7 +16,7 @@ namespace GameMain
         /// Главная точка входа для приложения.
         /// </summary>
         [STAThread]
-        static async Task Main()
+        static void Main()
         {
             if (!(Device11.GetSupportedFeatureLevel() == FeatureLevel.Level_11_0))
             {
@@ -27,7 +27,8 @@ namespace GameMain
 
             var game = new Game();
 
-            await game.Run();
+            game.Run();
+            game.Dispose();
             // Бесконечный цикл, чтобы приложение не завершалось
         }
     }

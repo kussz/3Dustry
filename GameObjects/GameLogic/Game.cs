@@ -20,25 +20,19 @@ namespace GameObjects.GameLogic
     {
         private RenderForm _renderForm;
         private const float MOVE_STEP = 0.01f;
-        private MeshObject _cube;
-        private MeshObject[,] _cubes;
-        private MeshObject[] _groundCompound;
-        private MeshObject[] _oreCompound;
+        private MeshObject[]? _groundCompound;
+        private MeshObject[]? _oreCompound;
         private Camera _camera;
 
         private Loader _loader;
-        Entity _entity;
+        Entity? _entity;
         List<Entity> _entities;
-        Entity[,] _entityMap;
-        Tile[][,] _fullMap;
-        bool[,] _collideMap;
+        Entity[,]? _entityMap;
+        Tile[][,]? _fullMap;
+        bool[,]? _collideMap;
         private DirectX3DGraphics _directX3DGraphics;
         private Renderer _renderer;
         private InputHandler _inputHandler;
-        private float _a = 1;
-        private float _b = 1;
-        private float _x;
-        private float _y;
         private TimeHelper _timeHelper;
         private bool _isDataLoaded = false;
         public RenderForm MainForm { get { return _renderForm; } }
@@ -126,10 +120,7 @@ namespace GameObjects.GameLogic
             float xstep = 0;
             float ystep = 0;
             float zstep = 0;
-            float astep = 0;
-            float bstep = 0;
             float step = MOVE_STEP * (_inputHandler.Shift ? 2 : 1);
-            float numStep = 0.05f;
             _inputHandler.Update();
             if (_inputHandler.Forward)
                 ystep += step * _timeHelper.DeltaT;
@@ -157,7 +148,7 @@ namespace GameObjects.GameLogic
 
             Matrix viewMatrix = _camera.GetViewMatrix();
             Matrix projectionMatrix = _camera.GetProjectionMatrix();
-            Vector3 hitPoint = _camera.IntersectRayWithPlane(40f, _entity.Size[1]);
+            Vector3 hitPoint = _camera.IntersectRayWithPlane(40f, _entity!.Size[1]);
             Vector3 hitPointDiscrete = new Vector3((float)Math.Round(hitPoint.X - _entity.Size.X / 2), 0, (float)Math.Round(hitPoint.Z - _entity.Size.X / 2));
             _entity.Mesh.MoveTo(hitPointDiscrete);
 
@@ -165,7 +156,7 @@ namespace GameObjects.GameLogic
             _renderForm.Text = "X: " + _entity.Mesh.Position.X + " Y: " + _camera.Pitch + " Z: " + _entity.Mesh.Position.Z;
             _renderer.BeginRender();
             _renderer.SetPerObjectConstantBuffer(0);
-            foreach (var comp in _groundCompound)
+            foreach (var comp in _groundCompound!)
             {
                 _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, comp.Texture);
                 _renderer.UpdatePerObjectConstantBuffers(comp.GetWorldMatrix(),
@@ -174,7 +165,7 @@ namespace GameObjects.GameLogic
 
             }
             _directX3DGraphics.DisableDepthTest();
-            foreach (var comp in _oreCompound)
+            foreach (var comp in _oreCompound!)
             {
                 _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, comp.Texture);
                 _renderer.UpdatePerObjectConstantBuffers(comp.GetWorldMatrix(),
@@ -206,7 +197,7 @@ namespace GameObjects.GameLogic
             if (texture == null)
             {
                 Dictionaries.SetTexture(_entity.Type, TextureLoader.GetEntityTexture(_directX3DGraphics, _entity.Type));
-                texture = Dictionaries.GetTexture(_entity.Type);
+                texture = Dictionaries.GetTexture(_entity!.Type);
             }
             if (IsBuildable(_entity))
             {
@@ -241,9 +232,9 @@ namespace GameObjects.GameLogic
             
         }
 
-        public async Task Run()
+        public void Run()
         {
-            LoadGameDataAsync();
+            _ = LoadGameDataAsync();
             RenderLoop.Run(_renderForm, RenderLoopCallback);
         }
 
@@ -259,7 +250,7 @@ namespace GameObjects.GameLogic
             for (int i = (int)entity.Mesh.Position.Z; i < (int)entity.Mesh.Position.Z+ entity.Size[0];i++)
                 for(int j = (int)entity.Mesh.Position.X; j < (int)entity.Mesh.Position.X+ entity.Size[0];j++)
                 {
-                    if (_collideMap[i,j]==false)
+                    if (_collideMap![i,j]==false)
                         return false;
                 }
             return true;
@@ -269,7 +260,7 @@ namespace GameObjects.GameLogic
             entity.IsBuilt = true;
             entity.Position = new(entity.Mesh.Position.X, entity.Mesh.Position.Z);
             ChangeCollisionMap(entity,false);
-            _entityMap[(int)entity.Position.Y, (int)entity.Position.X] = entity;
+            _entityMap![(int)entity.Position.Y, (int)entity.Position.X] = entity;
             _entities.Add(entity);
             _entity = new Core(_loader, new Vector2(0, 0));
         }
@@ -277,7 +268,7 @@ namespace GameObjects.GameLogic
         private void Destroy(Vector2 pos)
         {
             int x= (int)pos.X; int y= (int)pos.Y;
-            if(y<_entityMap.GetLength(0)&&y>=0&&
+            if(y<_entityMap!.GetLength(0)&&y>=0&&
                 x < _entityMap.GetLength(1) && x >= 0)
             {
                 Entity entity = _entityMap[y, x];
@@ -294,7 +285,7 @@ namespace GameObjects.GameLogic
         {
             for (int i = (int)entity.Position.Y; i < (int)entity.Position.Y + entity.Size[0]; i++)
                 for (int j = (int)entity.Position.X; j < (int)entity.Position.X + entity.Size[0]; j++)
-                    _collideMap[i, j] = value;
+                    _collideMap![i, j] = value;
         }
         private bool Selected(Entity entity, Vector3 position)
         {
@@ -304,7 +295,7 @@ namespace GameObjects.GameLogic
         {
             if ((int)entity.Mesh.Position.X < 0 || (int)entity.Mesh.Position.Z < 0)
                 return false;
-            if ((int)entity.Mesh.Position.Z + entity.Size[0] > _entityMap.GetLength(0) ||
+            if ((int)entity.Mesh.Position.Z + entity.Size[0] > _entityMap!.GetLength(0) ||
                 (int)entity.Mesh.Position.X + entity.Size[0] > _entityMap.GetLength(1))
                 return false;
             return true;

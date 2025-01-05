@@ -16,8 +16,6 @@ namespace GameObjects.GameLogic
         private Mouse mouse;
         private KeyboardState keyboardState;
         private double _border = Math.PI/2;
-        private bool _wasLeftMouseButtonDown = false;
-        private bool _wasMouseButtonDown = false;
         public bool Left { get; private set; }
         public bool Right { get; private set; }
         public bool Forward { get; private set; }
@@ -43,6 +41,7 @@ namespace GameObjects.GameLogic
             directInput = new DirectInput();
             keyboard = new Keyboard(directInput);
             keyboard.Acquire();
+            keyboardState = keyboard.GetCurrentState();
             mouse = new Mouse(directInput);
             mouse.Acquire();
         }

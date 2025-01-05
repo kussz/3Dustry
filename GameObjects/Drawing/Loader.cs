@@ -13,10 +13,6 @@ namespace GameObjects.Drawing
         {
             _directX3DGraphics = directX3DGraphics;
         }
-        public Loader()
-        {
-
-        }
         public MeshObject MakeTileSquare(Vector4 position, Tile type)
         {
             Renderer.VertexDataStruct[] vertices = new Renderer.VertexDataStruct[4]

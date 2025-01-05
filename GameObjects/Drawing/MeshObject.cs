@@ -12,8 +12,8 @@ namespace GameObjects.Drawing
 {
     public class MeshObject : Game3DObject, IDisposable
     {
-        private ShaderResourceView _texture;
-        public ShaderResourceView Texture { get { return _texture; } set { _texture = value; } }
+        private ShaderResourceView? _texture;
+        public ShaderResourceView? Texture { get { return _texture; } set { _texture = value; } }
         private DirectX3DGraphics _directX3DGraphics;
 
         private int _verticesCount;
@@ -32,7 +32,7 @@ namespace GameObjects.Drawing
 
         public MeshObject(DirectX3DGraphics directX3DGraphics,
             Vector4 position, float yaw, float pitch, float roll,
-            Renderer.VertexDataStruct[] vertices, uint[] indices, ShaderResourceView? texture)
+            Renderer.VertexDataStruct[] vertices, uint[] indices, ShaderResourceView texture)
             : this(directX3DGraphics, position, yaw, pitch, roll, vertices, indices)
         {
             _texture = texture;
