@@ -27,9 +27,8 @@ namespace GameObjects.Drawing
         public struct PerObjectConstantBuffer
         {
             public Matrix worldViewProjectionMatrix;
-            public float a;
-            public float b;
-            public Vector2 _padding;
+            public int isTransparent;
+            public Vector3 _padding;
         }
         public struct ConstantBuffer
         {
@@ -94,10 +93,9 @@ namespace GameObjects.Drawing
                 0);
         }
 
-        public void SetPerObjectConstantBuffer(float a, float b)
+        public void SetPerObjectConstantBuffer(int isTransparent)
         {
-            _perObjectConstantBuffer.a = a;
-            _perObjectConstantBuffer.b = b;
+            _perObjectConstantBuffer.isTransparent = isTransparent;
         }
 
         public void BeginRender()

@@ -12,6 +12,7 @@ namespace GameObjects.Entities
     {
         public Entity(Vector2 position, Vector2 size, Loader loader)
         {
+            IsBuilt = false;
             Position = position;
             Size = size;
             Mesh = loader.MakeCube(new SharpDX.Vector4(Position.X, 0, Position.Y, 1),size, 0, 0, 0);

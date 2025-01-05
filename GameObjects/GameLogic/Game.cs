@@ -10,6 +10,7 @@ using GameObjects.Entities;
 using SharpDX;
 
 using SharpDX.Direct3D11;
+using SharpDX.DirectWrite;
 using SharpDX.DXGI;
 using SharpDX.Windows;
 
@@ -28,6 +29,9 @@ namespace GameObjects.GameLogic
         private Loader _loader;
         Entity _entity;
         List<Entity> _entities;
+        Entity[,] _entityMap;
+        Tile[][,] _fullMap;
+        bool[,] _collideMap;
         private DirectX3DGraphics _directX3DGraphics;
         private Renderer _renderer;
         private InputHandler _inputHandler;
@@ -49,11 +53,13 @@ namespace GameObjects.GameLogic
             _loader = new Loader(_directX3DGraphics);
             _entity = new Core(_loader,new Vector2(0,0));
             MapLoader mapLoader = new MapLoader(_directX3DGraphics, _loader);
-            Tile[][,] fullmap = mapLoader.LoadMap("map2");
+            _fullMap = mapLoader.LoadMap("map2");
+            _collideMap = mapLoader.GetCollideMap(_fullMap[0]);
+            _entityMap=new Entity[_fullMap[0].GetLength(0), _fullMap[0].GetLength(1)];
             _entities = new List<Entity>();
-            _groundCompound = mapLoader.GetCompoundMap(fullmap[0], 0);
-            _oreCompound = mapLoader.GetCompoundMap(fullmap[1], 0.01f);
-            _camera = new Camera(new Vector4(fullmap[0].GetLength(0)/2, 5.0f, fullmap[0].GetLength(1)/2, 1.0f));
+            _groundCompound = mapLoader.GetCompoundMap(_fullMap[0], 0);
+            _oreCompound = mapLoader.GetCompoundMap(_fullMap[1], 0f);
+            _camera = new Camera(new Vector4(_fullMap[0].GetLength(0)/2, 5.0f, _fullMap[0].GetLength(1)/2, 1.0f));
             _timeHelper = new TimeHelper();
         }
 
@@ -68,11 +74,12 @@ namespace GameObjects.GameLogic
 
         public void RenderLoopCallback()
         {
-            //var center = _renderForm.PointToScreen(new System.Drawing.Point(
-            //        _renderForm.Width / 2,
-            //        _renderForm.Height / 2
-            //    ));
-            //System.Windows.Forms.Cursor.Position = center;
+            var center = _renderForm.PointToScreen(new System.Drawing.Point(
+                    _renderForm.Width / 2,
+                    _renderForm.Height / 2
+                ));
+            Cursor.Position = center;
+            Cursor.Hide();
 
             if (_inputHandler.Escape)
                 Environment.Exit(0);
@@ -105,10 +112,9 @@ namespace GameObjects.GameLogic
                 zstep += step * _timeHelper.DeltaT;
             if (_inputHandler.Down)
                 zstep -= step * _timeHelper.DeltaT;
-            if(_inputHandler.MouseClick)
+            if(_inputHandler.MouseClick&&IsBuildable(_entity))
             {
-                _entities.Add(_entity);
-                _entity = new Core(_loader,new Vector2(0,0));
+                Build(_entity);
             }
             _camera.MoveBy(ystep * (float)Math.Sin(_camera._yaw), zstep, ystep * (float)Math.Cos(_camera._yaw));
             _camera.MoveBy(xstep * (float)Math.Sin(_camera._yaw - Math.PI / 2), zstep, xstep * (float)Math.Cos(_camera._yaw - Math.PI / 2));
@@ -120,10 +126,13 @@ namespace GameObjects.GameLogic
             Matrix viewMatrix = _camera.GetViewMatrix();
             Matrix projectionMatrix = _camera.GetProjectionMatrix();
             Vector3 hitPoint = _camera.IntersectRayWithPlane(40f, _entity.Size[1]);
-            _entity.Mesh.MoveTo((float)Math.Floor(hitPoint.X - _entity.Size.X / 2), 0, (float)Math.Floor(hitPoint.Z - _entity.Size.Y / 2));
+            Vector3 hitPointDiscrete = new Vector3((float)Math.Floor(hitPoint.X - _entity.Size.X / 2), 0, (float)Math.Floor(hitPoint.Z - _entity.Size.Y / 2));
+            _entity.Mesh.MoveTo(hitPointDiscrete);
+
+
             _renderForm.Text = "X: " + _entity.Mesh.Position.X + " Y: " + _camera.Pitch + " Z: " + _entity.Mesh.Position.Z;
             _renderer.BeginRender();
-            _renderer.SetPerObjectConstantBuffer(_a, _b);
+            _renderer.SetPerObjectConstantBuffer(0);
             foreach (var comp in _groundCompound)
             {
                 _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, comp.Texture);
@@ -132,7 +141,17 @@ namespace GameObjects.GameLogic
                 _renderer.RenderMeshObject(comp);
 
             }
-            
+            _directX3DGraphics.DisableDepthTest();
+            foreach (var comp in _oreCompound)
+            {
+                _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, comp.Texture);
+                _renderer.UpdatePerObjectConstantBuffers(comp.GetWorldMatrix(),
+                    viewMatrix, projectionMatrix);
+                _renderer.RenderMeshObject(comp);
+
+            }
+            _directX3DGraphics.EnableDepthTest();
+
             foreach (var entity in _entities)
             {
                 ShaderResourceView textur = Dictionaries.GetTexture(_entity.Type);
@@ -141,6 +160,7 @@ namespace GameObjects.GameLogic
                     Dictionaries.SetTexture(_entity.Type, TextureLoader.GetEntityTexture(_directX3DGraphics, _entity.Type));
                     textur = Dictionaries.GetTexture(_entity.Type);
                 }
+                _renderer.SetPerObjectConstantBuffer(Convert.ToInt32(!entity.IsBuilt));
                 _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, textur);
                 _renderer.UpdatePerObjectConstantBuffers(entity.Mesh.GetWorldMatrix(),
                     viewMatrix, projectionMatrix);
@@ -153,18 +173,15 @@ namespace GameObjects.GameLogic
                 Dictionaries.SetTexture(_entity.Type,TextureLoader.GetEntityTexture(_directX3DGraphics,_entity.Type));
                 texture = Dictionaries.GetTexture(_entity.Type);
             }
-            _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, texture);
-            _renderer.UpdatePerObjectConstantBuffers(_entity.Mesh.GetWorldMatrix(),
-                viewMatrix, projectionMatrix);
-            _renderer.RenderMeshObject(_entity.Mesh);
-            foreach (var comp in _oreCompound)
+            if(IsBuildable(_entity))
             {
-                _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, comp.Texture);
-                _renderer.UpdatePerObjectConstantBuffers(comp.GetWorldMatrix(),
+                _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, texture);
+                _renderer.SetPerObjectConstantBuffer(1);
+                _renderer.UpdatePerObjectConstantBuffers(_entity.Mesh.GetWorldMatrix(),
                     viewMatrix, projectionMatrix);
-                _renderer.RenderMeshObject(comp);
-
+                _renderer.RenderMeshObject(_entity.Mesh);
             }
+            
 
 
 
@@ -189,6 +206,33 @@ namespace GameObjects.GameLogic
         {
             _renderer.Dispose();
             _directX3DGraphics.Dispose();
+        }
+        private bool IsBuildable(Entity entity)
+        {
+            Vector3 lookingPoint = (Vector3)entity.Mesh.Position;
+            if((int)lookingPoint.X<0||(int)lookingPoint.Z<0)
+                return false;
+            if ((int)lookingPoint.Z + entity.Size[0] > _entityMap.GetLength(0) ||
+                (int)lookingPoint.X + entity.Size[0] > _entityMap.GetLength(1))
+                return false;
+            for (int i = (int)entity.Mesh.Position.Z; i < (int)entity.Mesh.Position.Z+ entity.Size[0];i++)
+                for(int j = (int)entity.Mesh.Position.X; j < (int)entity.Mesh.Position.X+ entity.Size[0];j++)
+                {
+                    if (_collideMap[i,j]==false)
+                        return false;
+                }
+            return true;
+        }
+        private void Build(Entity entity)
+        {
+            entity.IsBuilt = true;
+            entity.Position = new(entity.Mesh.Position.X, entity.Mesh.Position.Z);
+            for(int i=(int)entity.Position.Y;i< (int)entity.Position.Y + entity.Size[0];i++)
+                for(int j=(int)entity.Position.X;j< (int)entity.Position.X + entity.Size[0];j++)
+                    _collideMap[i,j] = false;
+            _entityMap[(int)entity.Position.Y, (int)entity.Position.X] = entity;
+            _entities.Add(entity);
+            _entity = new Core(_loader, new Vector2(0, 0));
         }
 
 

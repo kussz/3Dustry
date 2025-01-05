@@ -66,7 +66,11 @@ namespace GameObjects.Drawing
             _position.Y = y;
             _position.Z = z;
         }
-        
+        public virtual void MoveTo(Vector3 vec)
+        {
+            MoveTo(vec.X, vec.Y, vec.Z);
+        }
+
 
 
         public Matrix GetWorldMatrix()

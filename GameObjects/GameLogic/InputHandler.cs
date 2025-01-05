@@ -104,7 +104,7 @@ namespace GameObjects.GameLogic
             if (isMouseButtonDown && !_wasMouseButtonDown)
             {
                 MouseClick = true; // Считаем щелчком, если кнопка была нажата сейчас
-                _wasMouseButtonDown = true;
+                //_wasMouseButtonDown = true;
             }
             else if (!isMouseButtonDown)
                 _wasMouseButtonDown = false;

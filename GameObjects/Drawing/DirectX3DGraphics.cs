@@ -41,7 +41,6 @@ namespace GameObjects.Drawing
         private Texture2D _depthStencilBuffer;
 
         private DepthStencilView _depthStencilView;
-
         private bool _isFullScreen;
         public bool IsFullScreen
         {
@@ -200,6 +199,33 @@ namespace GameObjects.Drawing
             Utilities.Dispose(ref _deviceContext);
             Utilities.Dispose(ref _swapChain);
             Utilities.Dispose(ref _device);
+        }
+
+        public void EnableDepthTest()
+        {
+            var depthStencilStateDescription = new DepthStencilStateDescription()
+            {
+                IsDepthEnabled = true,  // Включаем тест глубины
+                DepthWriteMask = DepthWriteMask.All,  // Разрешаем запись в буфер глубины
+                DepthComparison = Comparison.LessEqual,  // Сравниваем глубину, чтобы отрисовывались только те пиксели, которые ближе
+                IsStencilEnabled = false  // Отключаем использование stencil-буфера
+            };
+
+            var depthStencilState = new DepthStencilState(_device, depthStencilStateDescription);
+            _deviceContext.OutputMerger.DepthStencilState = depthStencilState;
+        }
+        public void DisableDepthTest()
+        {
+            var depthStencilStateDescription = new DepthStencilStateDescription()
+            {
+                IsDepthEnabled = false,
+                DepthWriteMask = DepthWriteMask.All,  // Разрешаем запись в буфер глубины, но она не будет учитываться, так как тест глубины отключен
+                DepthComparison = Comparison.Never,  // Этот параметр не будет использоваться
+                IsStencilEnabled = false// Отключаем использование stencil-буфера
+            };
+
+            var depthStencilState = new DepthStencilState(_device, depthStencilStateDescription);
+            _deviceContext.OutputMerger.DepthStencilState = depthStencilState;
         }
     }
 }

@@ -64,12 +64,12 @@ namespace GameObjects.Drawing
         }
         public MeshObject[] GetCompoundMap(Tile[,] map, float y)
         {
-            int indexOffset = 0;
             List<MeshObject> compoundHolder = new List<MeshObject>();
-            List<Renderer.VertexDataStruct> allVertices = new List<Renderer.VertexDataStruct>();
-            List<uint> allIndices = new List<uint>();
             foreach (var tileType in map.Cast<Tile>().Distinct().Except([Tile.None]))
             {
+                int indexOffset = 0;
+                List<Renderer.VertexDataStruct> allVertices = new List<Renderer.VertexDataStruct>();
+                List<uint> allIndices = new List<uint>();
                 ShaderResourceView shaderResourceView = TextureLoader.GetFloorTexture(_graphics, tileType);
                 for (int i = 0; i < map.GetLength(0); i++)
                     for (int j = 0; j < map.GetLength(1); j++)
@@ -85,6 +85,15 @@ namespace GameObjects.Drawing
                 compoundHolder.Add(new MeshObject(_graphics, new Vector4(0, 0, 0, 1), 0, 0, 0, allVertices.ToArray(), allIndices.ToArray(), shaderResourceView));
             }
             return compoundHolder.ToArray();
+        }
+        public bool[,] GetCollideMap(Tile[,] map)
+        {
+            bool[,] m = new bool[map.GetLength(0), map.GetLength(1)];
+            for (int i = 0; i < map.GetLength(0); i++)
+                for (int j = 0; j < map.GetLength(1); j++)
+                    if (map[i, j] != Tile.None)
+                        m[i, j] = true;
+            return m;
         }
     }
 }
