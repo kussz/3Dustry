@@ -16,6 +16,7 @@ namespace GameObjects.Drawing
 {
     public class Renderer : IDisposable
     {
+        private float color = 1;
         [StructLayout(LayoutKind.Sequential)]
         public struct VertexDataStruct
         {
@@ -103,7 +104,12 @@ namespace GameObjects.Drawing
             int isSel = Convert.ToInt32(isSelected);
             _perObjectConstantBuffer.isSelected = isSel;
         }
+        public void LoadingRender()
+        {
+            _directX3DGraphics.ClearBuffers(new Color(new Vector3(color, color, color)));
+            color -= 0.005f;
 
+        }
         public void BeginRender()
         {
             _directX3DGraphics.ClearBuffers(Color.Black);
