@@ -28,7 +28,8 @@ namespace GameObjects.Drawing
         {
             public Matrix worldViewProjectionMatrix;
             public int isTransparent;
-            public Vector3 _padding;
+            public int isSelected;
+            public Vector2 _padding;
         }
         public struct ConstantBuffer
         {
@@ -96,6 +97,11 @@ namespace GameObjects.Drawing
         public void SetPerObjectConstantBuffer(int isTransparent)
         {
             _perObjectConstantBuffer.isTransparent = isTransparent;
+        }
+        public void SetSelected(bool isSelected)
+        {
+            int isSel = Convert.ToInt32(isSelected);
+            _perObjectConstantBuffer.isSelected = isSel;
         }
 
         public void BeginRender()

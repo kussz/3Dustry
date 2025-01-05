@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace GameObjects.Entities
 {
-    public abstract class Entity
+    public abstract class Entity : IDisposable
     {
         public Entity(Vector2 position, Vector2 size, Loader loader)
         {
@@ -22,5 +22,6 @@ namespace GameObjects.Entities
         public EntityType Type { get; set; }
         public Vector2 Size { get; set; }
         public bool IsBuilt { get; set; }
+        public void Dispose() { Mesh.Dispose(); }
     }
 }

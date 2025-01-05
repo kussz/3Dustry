@@ -16,12 +16,14 @@ namespace GameObjects.GameLogic
         private Mouse mouse;
         private KeyboardState keyboardState;
         private double _border = Math.PI/2;
+        private bool _wasLeftMouseButtonDown = false;
         private bool _wasMouseButtonDown = false;
         public bool Left { get; private set; }
         public bool Right { get; private set; }
         public bool Forward { get; private set; }
         public bool Backward { get; private set; }
-        public bool MouseClick { get; private set; }
+        public bool LeftMouseClick { get; private set; }
+        public bool RightMouseClick { get; private set; }
         public bool Up { get; private set; }
         public bool Down { get; private set; }
         public bool Shift { get; private set; }
@@ -47,7 +49,7 @@ namespace GameObjects.GameLogic
 
         public void Update()
         {
-            MouseClick = false;
+            LeftMouseClick = false;
             prevTime = newTime;
             newTime = Environment.TickCount;
             // Обновляем состояние клавиатуры
@@ -100,14 +102,15 @@ namespace GameObjects.GameLogic
             if (keyboardState.IsPressed(Key.Escape))
                 Escape = true;
             MouseState state = mouse.GetCurrentState();
-            bool isMouseButtonDown = state.Buttons[0]; // 0 - левая кнопка мыши
-            if (isMouseButtonDown && !_wasMouseButtonDown)
-            {
-                MouseClick = true; // Считаем щелчком, если кнопка была нажата сейчас
-                //_wasMouseButtonDown = true;
-            }
-            else if (!isMouseButtonDown)
-                _wasMouseButtonDown = false;
+            LeftMouseClick = state.Buttons[0]; // 0 - левая кнопка мыши
+            RightMouseClick = state.Buttons[1]; // 0 - левая кнопка мыши
+            //if (isMouseButtonDown && !_wasMouseButtonDown)
+            //{
+            //    LeftMouseClick = true; // Считаем щелчком, если кнопка была нажата сейчас
+            //    //_wasMouseButtonDown = true;
+            //}
+            //else if (!isMouseButtonDown)
+            //    _wasMouseButtonDown = false;
             MouseX += state.X/100f;
             MouseY += state.Y/100f;
             MouseY = (float)Math.Min(Math.Max(-_border, MouseY), _border);

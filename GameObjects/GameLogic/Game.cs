@@ -112,10 +112,7 @@ namespace GameObjects.GameLogic
                 zstep += step * _timeHelper.DeltaT;
             if (_inputHandler.Down)
                 zstep -= step * _timeHelper.DeltaT;
-            if(_inputHandler.MouseClick&&IsBuildable(_entity))
-            {
-                Build(_entity);
-            }
+            
             _camera.MoveBy(ystep * (float)Math.Sin(_camera._yaw), zstep, ystep * (float)Math.Cos(_camera._yaw));
             _camera.MoveBy(xstep * (float)Math.Sin(_camera._yaw - Math.PI / 2), zstep, xstep * (float)Math.Cos(_camera._yaw - Math.PI / 2));
             _camera.PitchBy(_inputHandler.MouseY);
@@ -126,9 +123,9 @@ namespace GameObjects.GameLogic
             Matrix viewMatrix = _camera.GetViewMatrix();
             Matrix projectionMatrix = _camera.GetProjectionMatrix();
             Vector3 hitPoint = _camera.IntersectRayWithPlane(40f, _entity.Size[1]);
-            Vector3 hitPointDiscrete = new Vector3((float)Math.Floor(hitPoint.X - _entity.Size.X / 2), 0, (float)Math.Floor(hitPoint.Z - _entity.Size.Y / 2));
+            Vector3 hitPointDiscrete = new Vector3((float)Math.Round(hitPoint.X - _entity.Size.X / 2), 0, (float)Math.Round(hitPoint.Z - _entity.Size.X / 2));
             _entity.Mesh.MoveTo(hitPointDiscrete);
-
+            
 
             _renderForm.Text = "X: " + _entity.Mesh.Position.X + " Y: " + _camera.Pitch + " Z: " + _entity.Mesh.Position.Z;
             _renderer.BeginRender();
@@ -154,6 +151,8 @@ namespace GameObjects.GameLogic
 
             foreach (var entity in _entities)
             {
+                _renderer.SetSelected(Selected(entity, hitPointDiscrete));
+
                 ShaderResourceView textur = Dictionaries.GetTexture(_entity.Type);
                 if (textur == null)
                 {
@@ -167,6 +166,7 @@ namespace GameObjects.GameLogic
                 _renderer.RenderMeshObject(entity.Mesh);
                 
             }
+            _renderer.SetSelected(false);
             ShaderResourceView texture = Dictionaries.GetTexture(_entity.Type);
             if(texture == null)
             {
@@ -195,6 +195,14 @@ namespace GameObjects.GameLogic
             //_renderer.RenderMeshObject(_cube);
 
             _renderer.EndRender();
+            if (_inputHandler.LeftMouseClick && IsBuildable(_entity))
+            {
+                Build(_entity);
+            }
+            if (_inputHandler.RightMouseClick)
+            {
+                Destroy(new Vector2(hitPointDiscrete.X, hitPointDiscrete.Z));
+            }
         }
 
         public void Run()
@@ -209,11 +217,7 @@ namespace GameObjects.GameLogic
         }
         private bool IsBuildable(Entity entity)
         {
-            Vector3 lookingPoint = (Vector3)entity.Mesh.Position;
-            if((int)lookingPoint.X<0||(int)lookingPoint.Z<0)
-                return false;
-            if ((int)lookingPoint.Z + entity.Size[0] > _entityMap.GetLength(0) ||
-                (int)lookingPoint.X + entity.Size[0] > _entityMap.GetLength(1))
+            if (!IsInsideBounds(entity))
                 return false;
             for (int i = (int)entity.Mesh.Position.Z; i < (int)entity.Mesh.Position.Z+ entity.Size[0];i++)
                 for(int j = (int)entity.Mesh.Position.X; j < (int)entity.Mesh.Position.X+ entity.Size[0];j++)
@@ -227,15 +231,47 @@ namespace GameObjects.GameLogic
         {
             entity.IsBuilt = true;
             entity.Position = new(entity.Mesh.Position.X, entity.Mesh.Position.Z);
-            for(int i=(int)entity.Position.Y;i< (int)entity.Position.Y + entity.Size[0];i++)
-                for(int j=(int)entity.Position.X;j< (int)entity.Position.X + entity.Size[0];j++)
-                    _collideMap[i,j] = false;
+            ChangeCollisionMap(entity,false);
             _entityMap[(int)entity.Position.Y, (int)entity.Position.X] = entity;
             _entities.Add(entity);
             _entity = new Core(_loader, new Vector2(0, 0));
         }
 
-
+        private void Destroy(Vector2 pos)
+        {
+            int x= (int)pos.X; int y= (int)pos.Y;
+            if(y<_entityMap.GetLength(0)&&y>=0&&
+                x < _entityMap.GetLength(1) && x >= 0)
+            {
+                Entity entity = _entityMap[y, x];
+                if (entity!=null)
+                {
+                    _entityMap[y, x] = null;
+                    _entities.Remove(entity);
+                    ChangeCollisionMap(entity, true);
+                    entity.Dispose();
+                }
+            }
+        }
+        private void ChangeCollisionMap(Entity entity, bool value)
+        {
+            for (int i = (int)entity.Position.Y; i < (int)entity.Position.Y + entity.Size[0]; i++)
+                for (int j = (int)entity.Position.X; j < (int)entity.Position.X + entity.Size[0]; j++)
+                    _collideMap[i, j] = value;
+        }
+        private bool Selected(Entity entity, Vector3 position)
+        {
+            return ((int)entity.Position.X == (int)position.X && (int)entity.Position.Y == (int)position.Z);
+        }
+        private bool IsInsideBounds(Entity entity)
+        {
+            if ((int)entity.Mesh.Position.X < 0 || (int)entity.Mesh.Position.Z < 0)
+                return false;
+            if ((int)entity.Mesh.Position.Z + entity.Size[0] > _entityMap.GetLength(0) ||
+                (int)entity.Mesh.Position.X + entity.Size[0] > _entityMap.GetLength(1))
+                return false;
+            return true;
+        }
 
 
     }
