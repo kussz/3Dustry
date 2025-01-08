@@ -17,6 +17,7 @@ namespace GameObjects.Drawing
     public enum EntityType
     {
         None,
-        Core
+        Core,
+        Miner
     }
 }

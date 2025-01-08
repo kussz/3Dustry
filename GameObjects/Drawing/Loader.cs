@@ -53,62 +53,87 @@ namespace GameObjects.Drawing
             float deltaWidth = size[0];
             float height = size[1];
             Renderer.VertexDataStruct[] vertices =
-               new Renderer.VertexDataStruct[8]
+               new Renderer.VertexDataStruct[]
                {
 
                     new Renderer.VertexDataStruct // top 0
                     {
                         position = new Vector4(0, height, deltaWidth, 1.0f),
-                        texCoord = new Vector2(8/48f,40/48f) //yellow
+                        texCoord = new Vector2(3/4f,3/4f) //yellow
                     },
                     new Renderer.VertexDataStruct // top 1
                     {
                         position = new Vector4(0, height, 0, 1.0f),
-                        texCoord = new Vector2(8/48f, 8/48f) //red
+                        texCoord = new Vector2(3/4f, 1/4f) //red
                     },
                     new Renderer.VertexDataStruct // top 2
                     {
                         position = new Vector4(deltaWidth, height, 0, 1.0f),
-                        texCoord = new Vector2(40/48f, 8/48f)//cyan
+                        texCoord = new Vector2(1/4f, 1/4f)//cyan
                     },
                     new Renderer.VertexDataStruct // top 3
                     {
                         position = new Vector4(deltaWidth, height, deltaWidth, 1.0f),
-                        texCoord = new Vector2(40/48f,40/48f)//magenta
+                        texCoord = new Vector2(1/4f,3/4f)//magenta
                     },
+
                     new Renderer.VertexDataStruct // bottom 4
                     {
                         position = new Vector4(0, 0, 0, 1.0f),
-                        texCoord = new Vector2(0f, 0.0f)//green
+                        texCoord = new Vector2(1f, 1/4f)//green
                     },
-                    new Renderer.VertexDataStruct // bottom 5
+                    new Renderer.VertexDataStruct // bottom 45 (5)
+                    {
+                        position = new Vector4(0, 0, 0, 1.0f),
+                        texCoord = new Vector2(3/4f, 0.0f)//green
+                    },
+                    new Renderer.VertexDataStruct // bottom 5 (6)
                     {
                         position = new Vector4(0, 0,deltaWidth, 1.0f),
-                        texCoord = new Vector2(0.0f, 1f)//blue
+                        texCoord = new Vector2(1.0f, 3/4f)//blue
                     },
-                    new Renderer.VertexDataStruct // bottom 6
+                    new Renderer.VertexDataStruct // bottom 56 (7)
+                    {
+                        position = new Vector4(0, 0,deltaWidth, 1.0f),
+                        texCoord = new Vector2(3 / 4f, 1f)//blue
+                    },
+                    new Renderer.VertexDataStruct // bottom 6 (8)
                     {
                         position = new Vector4(deltaWidth, 0, deltaWidth, 1.0f),
-                        texCoord = new Vector2(1f, 1.0f)//black
+                        texCoord = new Vector2(1 / 4f, 1.0f)//black
                     },
-                    new Renderer.VertexDataStruct // bottom 7
+                    new Renderer.VertexDataStruct // bottom 67 (9)
+                    {
+                        position = new Vector4(deltaWidth, 0, deltaWidth, 1.0f),
+                        texCoord = new Vector2(0f, 3 / 4f)//black
+                    },
+                    new Renderer.VertexDataStruct // bottom 7 (10)
                     {
                         position = new Vector4(deltaWidth, 0, 0, 1.0f),
-                        texCoord = new Vector2(1f, 0f)//white
+                        texCoord = new Vector2(0f, 1/ 4f)//white
+                    },
+                    new Renderer.VertexDataStruct // bottom 78 (11)
+                    {
+                        position = new Vector4(deltaWidth, 0, 0, 1.0f),
+                        texCoord = new Vector2(1 / 4f, 0f)//white
                     }
                };
             uint[] indices = new uint[]
             {
                 0, 1, 2,    0,2,3,
-                4, 5,6,      4,6,7,
-                3,7,6,
-                0,3,6,
-                3,2,7,
-                0,6,5,
-                2,4,7,
-                1,4,2,
-                1,5,4,
-                1,0,5
+                //4, 6,8,      4,8,10,
+
+                3,10,9,
+                2,10,3,
+
+                3,8,7,
+                0,3,7,
+
+                1,0,6,
+                1,6,4,
+
+                11,2,1,
+                11,1,5
             };
             // Создание вершинного буфера с данными
             return new MeshObject(_directX3DGraphics, position,

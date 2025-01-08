@@ -47,7 +47,8 @@ namespace GameObjects.Drawing
         };
         private static Dictionary<EntityType, string> _entityTexturePaths = new Dictionary<EntityType, string>
         {
-            {EntityType.Core,"Assets/Entities/core.png"}
+            {EntityType.Core,"Assets/Entities/core.png"},
+            {EntityType.Miner,"Assets/Entities/Miner.png"}
         };
         public static string TexturePath(Tile key)
         { return _tileTexturePaths[key]; }

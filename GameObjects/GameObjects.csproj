@@ -23,6 +23,9 @@
     <None Update="Assets\Entities\core.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Assets\Entities\Miner.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Assets\Maps\map1.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -7,11 +7,12 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using GameObjects.Drawing;
 using GameObjects.Entities;
+using GameObjects.Resources;
 using SharpDX;
 
 using SharpDX.Direct3D11;
 using SharpDX.DirectWrite;
-using SharpDX.DXGI;
+
 using SharpDX.Windows;
 
 namespace GameObjects.GameLogic
@@ -75,7 +76,7 @@ namespace GameObjects.GameLogic
             _oreCompound = mapLoader.GetCompoundMap(_fullMap[1], 0f);
 
             // Создаем начальную сущность
-            _entity = new Core(_loader, new Vector2(0, 0));
+            _entity = new Miner(_loader, new Vector2(0, 0),new Copper(0));
             _camera.Position = new Vector4(_fullMap[0].GetLength(0) / 2, 5.0f, _fullMap[0].GetLength(1) / 2, 1.0f);
             _isDataLoaded = true;
         }
@@ -107,12 +108,12 @@ namespace GameObjects.GameLogic
                 return;
             }
 
-            var center = _renderForm.PointToScreen(new System.Drawing.Point(
-                    _renderForm.Width / 2,
-                    _renderForm.Height / 2
-                ));
-            Cursor.Position = center;
-            Cursor.Hide();
+            //var center = _renderForm.PointToScreen(new System.Drawing.Point(
+            //        _renderForm.Width / 2,
+            //        _renderForm.Height / 2
+            //    ));
+            //Cursor.Position = center;
+            //Cursor.Hide();
 
             if (_inputHandler.Escape)
                 Environment.Exit(0);
@@ -144,7 +145,7 @@ namespace GameObjects.GameLogic
             _camera.PitchBy(_inputHandler.MouseY);
             _camera.YawBy(_inputHandler.MouseX);
             
-            //_renderForm.Text = "FPS: " + _timeHelper.FPS.ToString();
+            _renderForm.Text = "FPS: " + _timeHelper.FPS.ToString();
 
             Matrix viewMatrix = _camera.GetViewMatrix();
             Matrix projectionMatrix = _camera.GetProjectionMatrix();
@@ -153,7 +154,7 @@ namespace GameObjects.GameLogic
             _entity.Mesh.MoveTo(hitPointDiscrete);
 
 
-            _renderForm.Text = "X: " + _entity.Mesh.Position.X + " Y: " + _camera.Pitch + " Z: " + _entity.Mesh.Position.Z;
+            //_renderForm.Text = "X: " + _entity.Mesh.Position.X + " Y: " + _camera.Pitch + " Z: " + _entity.Mesh.Position.Z;
             _renderer.BeginRender();
             _renderer.SetPerObjectConstantBuffer(0);
             foreach (var comp in _groundCompound!)
@@ -174,10 +175,20 @@ namespace GameObjects.GameLogic
 
             }
             _directX3DGraphics.EnableDepthTest();
-
+            var closestEntity = _entities
+            .Select(entity => new
+            {
+                Entity = entity,
+                IntersectionPoint = entity.IntersectWithLook(_camera, 40)
+            })
+            .Where(x => x.IntersectionPoint != Vector3.Zero)
+            .OrderBy(x => Vector3.Distance((Vector3)_camera.Position, x.IntersectionPoint))
+            .Select(x => x.Entity)
+            .FirstOrDefault();
             foreach (var entity in _entities)
             {
-                _renderer.SetSelected(Selected(entity, hitPointDiscrete));
+                entity.Produce(_timeHelper.DeltaT);
+                _renderer.SetSelected(entity==closestEntity);
 
                 ShaderResourceView textur = Dictionaries.GetTexture(_entity.Type);
                 if (textur == null)
@@ -227,7 +238,7 @@ namespace GameObjects.GameLogic
             }
             if (_inputHandler.RightMouseClick)
             {
-                Destroy(new Vector2(hitPointDiscrete.X, hitPointDiscrete.Z));
+                Destroy(closestEntity);
             }
             
         }
@@ -257,28 +268,23 @@ namespace GameObjects.GameLogic
         }
         private void Build(Entity entity)
         {
+            entity.Position = new Vector2(entity.Mesh.Position.X, entity.Mesh.Position.Z);
+            entity = new Miner(_loader, entity.Position,GetPerspectiveResource(entity));
             entity.IsBuilt = true;
-            entity.Position = new(entity.Mesh.Position.X, entity.Mesh.Position.Z);
             ChangeCollisionMap(entity,false);
             _entityMap![(int)entity.Position.Y, (int)entity.Position.X] = entity;
             _entities.Add(entity);
-            _entity = new Core(_loader, new Vector2(0, 0));
+            _entity = new Miner(_loader, new Vector2(0, 0),new Copper(0));
         }
 
-        private void Destroy(Vector2 pos)
+        private void Destroy(Entity entity)
         {
-            int x= (int)pos.X; int y= (int)pos.Y;
-            if(y<_entityMap!.GetLength(0)&&y>=0&&
-                x < _entityMap.GetLength(1) && x >= 0)
+            if (entity!=null)
             {
-                Entity entity = _entityMap[y, x];
-                if (entity!=null)
-                {
-                    _entityMap[y, x] = null;
-                    _entities.Remove(entity);
-                    ChangeCollisionMap(entity, true);
-                    entity.Dispose();
-                }
+                _entityMap[(int)entity.Position.Y, (int)entity.Position.X] = null;
+                _entities.Remove(entity);
+                ChangeCollisionMap(entity, true);
+                entity.Dispose();
             }
         }
         private void ChangeCollisionMap(Entity entity, bool value)
@@ -286,10 +292,6 @@ namespace GameObjects.GameLogic
             for (int i = (int)entity.Position.Y; i < (int)entity.Position.Y + entity.Size[0]; i++)
                 for (int j = (int)entity.Position.X; j < (int)entity.Position.X + entity.Size[0]; j++)
                     _collideMap![i, j] = value;
-        }
-        private bool Selected(Entity entity, Vector3 position)
-        {
-            return ((int)entity.Position.X == (int)position.X && (int)entity.Position.Y == (int)position.Z);
         }
         private bool IsInsideBounds(Entity entity)
         {
@@ -300,7 +302,16 @@ namespace GameObjects.GameLogic
                 return false;
             return true;
         }
+        private GameResource GetPerspectiveResource(Entity entity)
+        {
+            Inventory resources = new Inventory();
+            for (int i = (int)entity.Position.Y; i < (int)entity.Position.Y + entity.Size[0]; i++)
+                for (int j = (int)entity.Position.X; j < (int)entity.Position.X + entity.Size[0]; j++)
+                    if(_fullMap[1][i, j]!=Tile.None)
+                        resources.Add(ResourceFactory.CreateResource(_fullMap[1][i, j], 1));
+            return resources.GetMostPerspective();
 
+        }
 
     }
 }
