@@ -20,7 +20,7 @@ namespace GameObjects.GameLogic
     public class Game : IDisposable
     {
         private RenderForm _renderForm;
-        private const float MOVE_STEP = 0.01f;
+        private const float MOVE_STEP = 10f;
         private MeshObject[]? _groundCompound;
         private MeshObject[]? _oreCompound;
         private Camera _camera;
@@ -147,8 +147,9 @@ namespace GameObjects.GameLogic
             _camera.PitchBy(_inputHandler.MouseY);
             _camera.YawBy(_inputHandler.MouseX);
 
-            _renderForm.Text = "FPS: " + _timeHelper.FPS.ToString();
+            //_renderForm.Text = "FPS: " + _timeHelper.FPS.ToString();
             //_renderForm.Text = _timeHelper.DeltaT.ToString();
+            _renderForm.Text = "X: " + _camera.Position.X + " Y: " + _camera.Position.Y + " Z: " + _camera.Position.Z;
 
             Matrix viewMatrix = _camera.GetViewMatrix();
             Matrix projectionMatrix = _camera.GetProjectionMatrix();
@@ -157,7 +158,6 @@ namespace GameObjects.GameLogic
             _entity.Mesh.MoveTo(hitPointDiscrete);
 
 
-            //_renderForm.Text = "X: " + _entity.Mesh.Position.X + " Y: " + _camera.Pitch + " Z: " + _entity.Mesh.Position.Z;
             _renderer.BeginRender();
             _renderer.SetPerObjectConstantBuffer(0);
             foreach (var comp in _groundCompound!)

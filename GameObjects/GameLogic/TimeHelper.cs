@@ -40,16 +40,14 @@ namespace GameObjects.GameLogic
             _fps = 0;
             _stopwatch.Start();
             _previousFPSMeasurementTime = _stopwatch.ElapsedMilliseconds;
-            _previousTicks = _stopwatch.ElapsedTicks;
         }
 
         public void Update()
         {
             prevTime = newTime;
-            newTime = Environment.TickCount;
             long ticks = _stopwatch.ElapsedTicks;
-            _time = (float)ticks / TimeSpan.TicksPerSecond;
-            _previousTicks = ticks;
+            newTime = (float)ticks / Stopwatch.Frequency; // Время в секундах
+
 
             _framesCouner++;
             if (_stopwatch.ElapsedMilliseconds - _previousFPSMeasurementTime >= 1000)

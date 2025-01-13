@@ -31,7 +31,7 @@ namespace GameObjects.Entities
         public void Dispose() { Mesh.Dispose(); }
         public void Produce(float deltaT)
         {
-            Cooldown -= deltaT * Speed*0.1f;
+            Cooldown -= deltaT * Speed*30f;
             if(Cooldown<=0)
             {
                 Cooldown=100;
