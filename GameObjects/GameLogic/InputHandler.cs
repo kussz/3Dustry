@@ -35,6 +35,9 @@ namespace GameObjects.GameLogic
         public float prevTime = Environment.TickCount;
         public float newTime = Environment.TickCount;
         public float DeltaTime { get { return newTime - prevTime; } }
+        public bool SelectionChanged { get; set; } = false;
+        public int HotbarSelection { get; private set; } = 1;
+        private Key[] _hotbarKeys = { Key.D1, Key.D2, Key.D3, Key.D4, Key.D5, Key.D6, Key.D7, Key.D8 };
 
         public InputHandler()
         {
@@ -100,6 +103,16 @@ namespace GameObjects.GameLogic
                 Bminus = false;
             if (keyboardState.IsPressed(Key.Escape))
                 Escape = true;
+            for (int i = 0; i < _hotbarKeys.Length; i++)
+            {
+                if (keyboardState.IsPressed(_hotbarKeys[i]))
+                {
+                    SelectionChanged = true;
+                    HotbarSelection = i + 1; // Увеличиваем на 1, чтобы соответствовать индексу
+                    break; // Выход из цикла после обнаружения нажатия
+                }
+            }
+
             MouseState state = mouse.GetCurrentState();
             LeftMouseClick = state.Buttons[0]; // 0 - левая кнопка мыши
             RightMouseClick = state.Buttons[1]; // 0 - левая кнопка мыши

@@ -32,23 +32,23 @@ namespace GameObjects.Drawing
             {
                 new Renderer.VertexDataStruct
                 {
-                    position = new Vector4(-aspectX,-aspectY,0,1.0f),
-                    texCoord= new Vector2(0,0),
-                },
-                new Renderer.VertexDataStruct
-                {
-                    position = new Vector4(+aspectX,-aspectY,0,1.0f),
-                    texCoord= new Vector2(1,0),
-                },
-                new Renderer.VertexDataStruct
-                {
-                    position = new Vector4(-aspectX,+aspectY,0,1.0f),
+                    position = new Vector4(-aspectX,-aspectY,1,1.0f),
                     texCoord= new Vector2(0,1),
                 },
                 new Renderer.VertexDataStruct
                 {
-                    position = new Vector4(+aspectX,+aspectY,0,1.0f),
+                    position = new Vector4(+aspectX,-aspectY,1,1.0f),
                     texCoord= new Vector2(1,1),
+                },
+                new Renderer.VertexDataStruct
+                {
+                    position = new Vector4(-aspectX,+aspectY,1,1.0f),
+                    texCoord= new Vector2(0,0),
+                },
+                new Renderer.VertexDataStruct
+                {
+                    position = new Vector4(+aspectX,+aspectY,1,1.0f),
+                    texCoord= new Vector2(1,0),
                 },
             };
             uint[] indices = new uint[]

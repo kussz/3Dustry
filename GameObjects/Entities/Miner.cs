@@ -23,5 +23,10 @@ namespace GameObjects.Entities
             Inventory.Add(_resource);
             Mesh.Position = new Vector4(Mesh.Position.X, Inventory.Get("Copper"), Mesh.Position.Z, 1);
         }
+        override public void Build(GameResource resource)
+        {
+            _resource = resource;
+            base.Build(resource);
+        }
     }
 }

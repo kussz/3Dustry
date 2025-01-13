@@ -44,7 +44,7 @@ namespace GameObjects.Drawing
                     byte b = pixelArray[index + 2]; // Red
                     string color = ColorToHex(r, g, b);
 
-                    tiles[y, x] = Dictionaries.Color(color);
+                    tiles[y, x] = TextureStorage.GetTileFromColorString(color);
 
 
                 }

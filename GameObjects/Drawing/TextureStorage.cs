@@ -8,8 +8,13 @@ using System.Threading.Tasks;
 
 namespace GameObjects.Drawing
 {
-    public static class Dictionaries
+    public static class TextureStorage
     {
+        private static DirectX3DGraphics _graphics;
+        public static void Configure(DirectX3DGraphics graphics)
+        {
+            _graphics=graphics;
+        }
         private static Dictionary<string, Tile> _keyValuePairs = new Dictionary<string, Tile>
         {
             {"#D2AE8D",Tile.Sand },
@@ -18,7 +23,7 @@ namespace GameObjects.Drawing
             {"#8E85A2",Tile.Lead }
         };
         private static Dictionary<EntityType, TextureHolder> _textures = new Dictionary<EntityType, TextureHolder>();
-        public static Tile Color(string key)
+        public static Tile GetTileFromColorString(string key)
         {
             if (_keyValuePairs.TryGetValue(key, out Tile tile))
             {
@@ -26,17 +31,18 @@ namespace GameObjects.Drawing
             }
             return Tile.None; // Или используйте значение по умолчанию
         }
-        public static void SetTextureHolder(EntityType type, TextureHolder texture)
-        {
-            _textures.Add(type, texture);
-        }
+        //public static void SetTextureHolder(EntityType type, TextureHolder texture)
+        //{
+        //    _textures.Add(type, texture);
+        //}
         public static TextureHolder? GetTextureHolder(EntityType type)
         {
             if (_textures.TryGetValue(type, out TextureHolder texture))
             {
                 return texture;
             }
-            return null; // Или используйте значение по умолчанию
+            _textures.Add(type,new TextureHolder(_graphics.Device,GetTexturePath(type)));
+            return _textures[type];
         }
         private static Dictionary<Tile, string> _tileTexturePaths = new Dictionary<Tile, string>
         {
@@ -50,9 +56,9 @@ namespace GameObjects.Drawing
             {EntityType.Core,"Assets/Entities/Core"},
             {EntityType.Miner,"Assets/Entities/Miner"}
         };
-        public static string TexturePath(Tile key)
+        public static string GetTexturePath(Tile key)
         { return _tileTexturePaths[key]; }
-        public static string TexturePath(EntityType key)
+        public static string GetTexturePath(EntityType key)
         { return _entityTexturePaths[key]; }
         public static int Types { get { return _tileTexturePaths.Count; } }
     }

@@ -88,12 +88,12 @@ namespace GameObjects.Drawing
         }
         public static ShaderResourceView GetFloorTexture(DirectX3DGraphics graphics, Tile type)
         {
-            Texture2D texture = LoadTexture(graphics.Device, Dictionaries.TexturePath(type));
+            Texture2D texture = LoadTexture(graphics.Device, TextureStorage.GetTexturePath(type));
             return new ShaderResourceView(graphics.Device, texture);
         }
         public static ShaderResourceView GetEntityTexture(DirectX3DGraphics graphics, EntityType type)
         {
-            Texture2D texture = LoadTexture(graphics.Device, Dictionaries.TexturePath(type));
+            Texture2D texture = LoadTexture(graphics.Device, TextureStorage.GetTexturePath(type));
             return new ShaderResourceView(graphics.Device, texture);
         }
     }

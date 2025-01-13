@@ -1,5 +1,6 @@
 ﻿using GameObjects.Drawing;
 using GameObjects.GameLogic;
+using GameObjects.Resources;
 using SharpDX;
 using System;
 using System.Collections.Generic;
@@ -24,6 +25,11 @@ namespace GameObjects.Entities
             Size = size;
             Mesh = loader.MakeCube(new SharpDX.Vector4(Position.X, 0, Position.Y, 1), size, 0, 0, 0);
             TextureHolder = textureHolder;
+        }
+        public virtual void Build(GameResource resource)
+        {
+            Position = new Vector2(Mesh.Position.X, Mesh.Position.Z);
+            IsBuilt = true;
         }
         public MeshObject Mesh { get; set; }
         public Vector2 Position { get; set; }

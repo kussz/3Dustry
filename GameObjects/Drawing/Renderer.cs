@@ -11,6 +11,8 @@ using SharpDX.Direct3D11;
 using SharpDX.Direct3D;
 using Buffer11 = SharpDX.Direct3D11.Buffer;
 using Device11 = SharpDX.Direct3D11.Device;
+using SharpDX.Windows;
+using GameObjects.Entities;
 
 namespace GameObjects.Drawing
 {
@@ -95,7 +97,7 @@ namespace GameObjects.Drawing
                 0);
         }
 
-        public void SetPerObjectConstantBuffer(int isTransparent)
+        public void SetTransparent(int isTransparent)
         {
             _perObjectConstantBuffer.isTransparent = isTransparent;
         }
@@ -154,6 +156,35 @@ namespace GameObjects.Drawing
             Utilities.Dispose(ref _shaderSignature);
             Utilities.Dispose(ref _pixelShader);
             Utilities.Dispose(ref _vertexShader);
+        }
+
+
+        public void RenderMenuItem(MenuTile tile,float aspect)
+        {
+            _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, tile.Mesh.Texture);
+            SetTransparent(0);
+            UpdatePerObjectConstantBuffers(tile.Mesh.GetWorldMatrix(), Matrix.Identity, Matrix.OrthoLH(aspect * 2f, 2f, 0.1f, 100.0f));
+            RenderMeshObject(tile.Mesh);
+        }
+        public void RenderEntity(Entity entity,Matrix viewMatrix,Matrix projectionMatrix,bool isSelected)
+        {
+            SetSelected(isSelected);
+            SetTransparent(Convert.ToInt32(!entity.IsBuilt));
+            _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, entity.TextureHolder.CurrentFrame);
+            UpdatePerObjectConstantBuffers(entity.Mesh.GetWorldMatrix(),
+                viewMatrix, projectionMatrix);
+            RenderMeshObject(entity.Mesh);
+        }
+        public void RenderCompound(MeshObject[] compound, Matrix viewMatrix, Matrix projectionMatrix)
+        {
+            foreach (var comp in compound!)
+            {
+                _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, comp.Texture);
+                UpdatePerObjectConstantBuffers(comp.GetWorldMatrix(),
+                    viewMatrix, projectionMatrix);
+                RenderMeshObject(comp);
+
+            }
         }
     }
 }

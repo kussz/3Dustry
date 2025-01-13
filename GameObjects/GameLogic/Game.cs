@@ -40,7 +40,7 @@ namespace GameObjects.GameLogic
         private bool _isDataLoaded = false;
         public RenderForm MainForm { get { return _renderForm; } }
 
-        private MenuTile _menu;
+        private Menu _menu;
 
         public Game()
         {
@@ -54,7 +54,10 @@ namespace GameObjects.GameLogic
             _renderer.CreateConstantBuffer();
             _loader = new Loader(_directX3DGraphics);
             //_menu = _loader.MakeTileSquare(new Vector4(0, 0, 0, 1));
-            _menu = new MenuTile(_loader, _directX3DGraphics.Device, "Assets\\Menu\\Inventory.png",1,new Vector2(0,0));
+            MenuTile.Configure(_loader, _directX3DGraphics.Device);
+            EntityFactory.Configure(_loader);
+            TextureStorage.Configure(_directX3DGraphics);
+            _menu = new Menu();
             // Вспомогательные компоненты
             _inputHandler = new InputHandler();
             _entities = new List<Entity>();
@@ -81,9 +84,9 @@ namespace GameObjects.GameLogic
             _entityMap = new Entity[_fullMap[0].GetLength(0), _fullMap[0].GetLength(1)];
             _groundCompound = mapLoader.GetCompoundMap(_fullMap[0], 0);
             _oreCompound = mapLoader.GetCompoundMap(_fullMap[1], 0f);
-            Dictionaries.SetTextureHolder(EntityType.Miner, new TextureHolder(_directX3DGraphics.Device, "Assets\\Entities\\Miner\\"));
+            //TextureStorage.SetTextureHolder(EntityType.Miner, new TextureHolder(_directX3DGraphics.Device, "Assets\\Entities\\Miner\\"));
             // Создаем начальную сущность
-            _entity = new Miner(_loader, new Vector2(0, 0), new Copper(0),Dictionaries.GetTextureHolder(EntityType.Miner));
+            _entity = EntityFactory.CreateEntity(1, new Copper(0));
             //_entity = new Core(_loader, new Vector2(0, 0));
             _camera.Position = new Vector4(_fullMap[0].GetLength(0) / 2, 5.0f, _fullMap[0].GetLength(1) / 2, 1.0f);
             _timeHelper.Update();
@@ -117,7 +120,7 @@ namespace GameObjects.GameLogic
                 return;
             }
             _timeHelper.Update();
-            //AlignCursorToCenter();
+            AlignCursorToCenter();
             ProceedInputs();
 
             //_renderForm.Text = "FPS: " + _timeHelper.FPS.ToString();
@@ -170,7 +173,11 @@ namespace GameObjects.GameLogic
             _inputHandler.Update();
             if (_inputHandler.Escape)
                 Environment.Exit(0);
-
+            if(_inputHandler.SelectionChanged) {
+                _inputHandler.SelectionChanged = false;
+                _menu.SetSelectedCell(_inputHandler.HotbarSelection);
+                _entity = EntityFactory.CreateEntity(_inputHandler.HotbarSelection, new Copper(0));
+            }
             float xstep = 0;
             float ystep = 0;
             float zstep = 0;
@@ -201,50 +208,28 @@ namespace GameObjects.GameLogic
         private void Render(Matrix viewMatrix, Matrix projectionMatrix)
         {
             _renderer.BeginRender();
-            _renderer.SetPerObjectConstantBuffer(0);
-            foreach (var comp in _groundCompound!)
-            {
-                _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, comp.Texture);
-                _renderer.UpdatePerObjectConstantBuffers(comp.GetWorldMatrix(),
-                    viewMatrix, projectionMatrix);
-                _renderer.RenderMeshObject(comp);
-
-            }
+            _renderer.SetTransparent(0);
+            _renderer.SetSelected(false);
+            _renderer.RenderCompound(_groundCompound,viewMatrix,projectionMatrix);
             _directX3DGraphics.DisableDepthTest();
-            foreach (var comp in _oreCompound!)
-            {
-                _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, comp.Texture);
-                _renderer.UpdatePerObjectConstantBuffers(comp.GetWorldMatrix(),
-                    viewMatrix, projectionMatrix);
-                _renderer.RenderMeshObject(comp);
-
-            }
+            _renderer.RenderCompound(_oreCompound,viewMatrix,projectionMatrix);
             _directX3DGraphics.EnableDepthTest();
             
             foreach (var entity in _entities)
             {
                 entity.Produce(_timeHelper.DeltaT);
-                _renderer.SetSelected(entity == _closestEntity);
-                _renderer.SetPerObjectConstantBuffer(Convert.ToInt32(!entity.IsBuilt));
-                _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, entity.TextureHolder.CurrentFrame);
-                _renderer.UpdatePerObjectConstantBuffers(entity.Mesh.GetWorldMatrix(),
-                    viewMatrix, projectionMatrix);
-                _renderer.RenderMeshObject(entity.Mesh);
+                _renderer.RenderEntity(entity, viewMatrix, projectionMatrix, entity == _closestEntity);
 
             }
-            _renderer.SetSelected(false);
             if (IsBuildable(_entity))
             {
-                _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, _entity.TextureHolder.Textures[0]);
-                _renderer.SetPerObjectConstantBuffer(1);
-                _renderer.UpdatePerObjectConstantBuffers(_entity.Mesh.GetWorldMatrix(),
-                    viewMatrix, projectionMatrix);
-                _renderer.RenderMeshObject(_entity.Mesh);
+                _renderer.RenderEntity(_entity, viewMatrix, projectionMatrix,false);
             }
-            _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, _menu.Mesh.Texture);
-            _renderer.SetPerObjectConstantBuffer(0);
-            _renderer.UpdatePerObjectConstantBuffers(_menu.Mesh.GetWorldMatrix(),Matrix.Identity,Matrix.Identity);
-            _renderer.RenderMeshObject(_menu.Mesh);
+            _renderer.SetTransparent(0);
+            _renderer.SetSelected(false);
+            float aspect = (float)_renderForm.ClientSize.Width / _renderForm.ClientSize.Height;
+            _renderer.RenderMenuItem(_menu.Hotbar,aspect);
+            _renderer.RenderMenuItem(_menu.SelectedCell,aspect);
             _renderer.EndRender();
         }
         public void Run()
@@ -277,14 +262,12 @@ namespace GameObjects.GameLogic
         }
         private void Build(Entity entity)
         {
-            entity.Position = new Vector2(entity.Mesh.Position.X, entity.Mesh.Position.Z);
-            entity = new Miner(_loader, entity.Position, GetPerspectiveResource(entity),Dictionaries.GetTextureHolder(entity.Type));
-            entity.IsBuilt = true;
+            entity.Build(GetPerspectiveResource(entity));
             ChangeCollisionMap(entity,false);
             _entityMap![(int)entity.Position.Y, (int)entity.Position.X] = entity;
             _entities.Add(entity);
             //_entity = new Core(_loader, new Vector2(0, 0));
-            _entity = new Miner(_loader, new Vector2(0, 0), new Copper(0), Dictionaries.GetTextureHolder(entity.Type));
+            _entity = EntityFactory.CreateEntity(_inputHandler.HotbarSelection,new Copper(0));
         }
 
         private void Destroy(Entity? entity)
@@ -315,8 +298,8 @@ namespace GameObjects.GameLogic
         private GameResource GetPerspectiveResource(Entity entity)
         {
             Inventory resources = new Inventory();
-            for (int i = (int)entity.Position.Y; i < (int)entity.Position.Y + entity.Size[0]; i++)
-                for (int j = (int)entity.Position.X; j < (int)entity.Position.X + entity.Size[0]; j++)
+            for (int i = (int)entity.Mesh.Position.Z; i < (int)entity.Mesh.Position.Z + entity.Size[0]; i++)
+                for (int j = (int)entity.Mesh.Position.X; j < (int)entity.Mesh.Position.X + entity.Size[0]; j++)
                     if(_fullMap[1][i, j]!=Tile.None)
                         resources.Add(ResourceFactory.CreateResource(_fullMap[1][i, j], 1));
             return resources.GetMostPerspective();
