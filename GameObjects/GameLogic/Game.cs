@@ -76,7 +76,8 @@ namespace GameObjects.GameLogic
             _oreCompound = mapLoader.GetCompoundMap(_fullMap[1], 0f);
 
             // Создаем начальную сущность
-            _entity = new Miner(_loader, new Vector2(0, 0),new Copper(0));
+            _entity = new Miner(_loader, new Vector2(0, 0), new Copper(0));
+            //_entity = new Core(_loader, new Vector2(0, 0));
             _camera.Position = new Vector4(_fullMap[0].GetLength(0) / 2, 5.0f, _fullMap[0].GetLength(1) / 2, 1.0f);
             _isDataLoaded = true;
         }
@@ -97,24 +98,24 @@ namespace GameObjects.GameLogic
                 RenderFormResizedCallback(this, EventArgs.Empty);
                 _firstRun = false;
             }
-            _timeHelper.Update();
             if (!_isDataLoaded)
             {
                 
-                _renderForm.Text =_timeHelper.DeltaT.ToString();
+                _renderForm.Text = "Loading...";
                 _renderer.LoadingRender();
 
                 _renderer.EndRender();
                 return;
             }
 
-            //var center = _renderForm.PointToScreen(new System.Drawing.Point(
-            //        _renderForm.Width / 2,
-            //        _renderForm.Height / 2
-            //    ));
-            //Cursor.Position = center;
-            //Cursor.Hide();
+            var center = _renderForm.PointToScreen(new System.Drawing.Point(
+                    _renderForm.Width / 2,
+                    _renderForm.Height / 2
+                ));
+            Cursor.Position = center;
+            Cursor.Hide();
 
+            _inputHandler.Update();
             if (_inputHandler.Escape)
                 Environment.Exit(0);
             
@@ -122,7 +123,8 @@ namespace GameObjects.GameLogic
             float ystep = 0;
             float zstep = 0;
             float step = MOVE_STEP * (_inputHandler.Shift ? 2 : 1);
-            _inputHandler.Update();
+            _timeHelper.Update();
+            
             if (_inputHandler.Forward)
                 ystep += step * _timeHelper.DeltaT;
             if (_inputHandler.Backward)
@@ -144,8 +146,9 @@ namespace GameObjects.GameLogic
             _camera.MoveBy(xstep * (float)Math.Sin(_camera._yaw - Math.PI / 2), zstep, xstep * (float)Math.Cos(_camera._yaw - Math.PI / 2));
             _camera.PitchBy(_inputHandler.MouseY);
             _camera.YawBy(_inputHandler.MouseX);
-            
+
             _renderForm.Text = "FPS: " + _timeHelper.FPS.ToString();
+            //_renderForm.Text = _timeHelper.DeltaT.ToString();
 
             Matrix viewMatrix = _camera.GetViewMatrix();
             Matrix projectionMatrix = _camera.GetProjectionMatrix();
@@ -269,12 +272,13 @@ namespace GameObjects.GameLogic
         private void Build(Entity entity)
         {
             entity.Position = new Vector2(entity.Mesh.Position.X, entity.Mesh.Position.Z);
-            entity = new Miner(_loader, entity.Position,GetPerspectiveResource(entity));
+            entity = new Miner(_loader, entity.Position, GetPerspectiveResource(entity));
             entity.IsBuilt = true;
             ChangeCollisionMap(entity,false);
             _entityMap![(int)entity.Position.Y, (int)entity.Position.X] = entity;
             _entities.Add(entity);
-            _entity = new Miner(_loader, new Vector2(0, 0),new Copper(0));
+            //_entity = new Core(_loader, new Vector2(0, 0));
+            _entity = new Miner(_loader, new Vector2(0, 0), new Copper(0));
         }
 
         private void Destroy(Entity entity)

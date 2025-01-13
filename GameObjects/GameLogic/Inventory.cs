@@ -16,15 +16,18 @@ namespace GameObjects.GameLogic
         }
         public void Add(GameResource resource)
         {
-            var type = resource.GetType();
-            var addingRes = _resources.Where(r=>r.GetType() == type).SingleOrDefault();
-            if (addingRes == null)
+            if (resource != null)
             {
-                _resources.Add(resource);
-            }
-            else
-            {
-                _resources[_resources.IndexOf(addingRes)] = addingRes+resource;
+                var type = resource.GetType();
+                var addingRes = _resources.Where(r => r.GetType() == type).SingleOrDefault();
+                if (addingRes == null)
+                {
+                    _resources.Add(resource);
+                }
+                else
+                {
+                    _resources[_resources.IndexOf(addingRes)] = addingRes + resource;
+                }
             }
         }
         public int Get(string name)
