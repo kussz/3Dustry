@@ -10,7 +10,7 @@ namespace GameObjects.Entities
 {
     public class Core : Entity
     {
-        public Core(Loader loader, Vector2 position) : base(position, new Vector2(4,1f),loader,1)
+        public Core(Loader loader, Vector2 position,TextureHolder textureHolder) : base(position, new Vector2(4,1f),loader,1, textureHolder)
         {
             Type = EntityType.Core;
             

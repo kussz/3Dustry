@@ -30,8 +30,9 @@ namespace GameObjects.Drawing
         /// <param name="deviceManager"></param>
         /// <param name="filename"></param>
         /// <returns></returns>
-        public static BitmapSource LoadBitmap(ImagingFactory2 factory, string filename)
+        public static BitmapSource LoadBitmap(string filename)
         {
+            ImagingFactory2 factory = new ImagingFactory2();
             var bitmapDecoder = new BitmapDecoder(
                 factory,
                 filename,
@@ -82,7 +83,7 @@ namespace GameObjects.Drawing
         }
         public static Texture2D LoadTexture(Device device, string filename)
         {
-            BitmapSource bitmapSource = LoadBitmap(new ImagingFactory2(), filename);
+            BitmapSource bitmapSource = LoadBitmap(filename);
             return CreateTexture2DFromBitmap(device, bitmapSource);
         }
         public static ShaderResourceView GetFloorTexture(DirectX3DGraphics graphics, Tile type)

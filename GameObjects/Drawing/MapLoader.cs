@@ -21,7 +21,7 @@ namespace GameObjects.Drawing
         }
         private Tile[,] GetTiles(string name, string type)
         {
-            BitmapSource bitmap = TextureLoader.LoadBitmap(new ImagingFactory2(), "Assets/Maps/" + name + "/" + type + ".png");
+            BitmapSource bitmap = TextureLoader.LoadBitmap("Assets/Maps/" + name + "/" + type + ".png");
             int width = bitmap.Size.Width;
             int height = bitmap.Size.Height;
             int stride = width * 4; // 4 байта на пиксель (RGBA)
@@ -76,7 +76,7 @@ namespace GameObjects.Drawing
                     {
                         if (map[i, j] == tileType)
                         {
-                            MeshObject tile = _loader.MakeTileSquare(new Vector4(j, y, i, 1f), map[i, j]);
+                            MeshObject tile = _loader.MakeTileSquare(new Vector4(j, y, i, 1f));
                             allVertices.AddRange(tile.Vertices); // Предполагается, что у вас есть доступ к вершинам
                             allIndices.AddRange(tile.Indices.Select(idx => (uint)(idx + indexOffset))); // Корректируем индексы
                             indexOffset += tile.Vertices.Length;

@@ -17,7 +17,7 @@ namespace GameObjects.Drawing
             {"#AE7C5B",Tile.Copper },
             {"#8E85A2",Tile.Lead }
         };
-        private static Dictionary<EntityType, ShaderResourceView> _textures = new Dictionary<EntityType, ShaderResourceView>();
+        private static Dictionary<EntityType, TextureHolder> _textures = new Dictionary<EntityType, TextureHolder>();
         public static Tile Color(string key)
         {
             if (_keyValuePairs.TryGetValue(key, out Tile tile))
@@ -26,13 +26,13 @@ namespace GameObjects.Drawing
             }
             return Tile.None; // Или используйте значение по умолчанию
         }
-        public static void SetTexture(EntityType type, ShaderResourceView texture)
+        public static void SetTextureHolder(EntityType type, TextureHolder texture)
         {
             _textures.Add(type, texture);
         }
-        public static ShaderResourceView? GetTexture(EntityType type)
+        public static TextureHolder? GetTextureHolder(EntityType type)
         {
-            if (_textures.TryGetValue(type, out ShaderResourceView texture))
+            if (_textures.TryGetValue(type, out TextureHolder texture))
             {
                 return texture;
             }
@@ -47,8 +47,8 @@ namespace GameObjects.Drawing
         };
         private static Dictionary<EntityType, string> _entityTexturePaths = new Dictionary<EntityType, string>
         {
-            {EntityType.Core,"Assets/Entities/core.png"},
-            {EntityType.Miner,"Assets/Entities/Miner.png"}
+            {EntityType.Core,"Assets/Entities/Core"},
+            {EntityType.Miner,"Assets/Entities/Miner"}
         };
         public static string TexturePath(Tile key)
         { return _tileTexturePaths[key]; }

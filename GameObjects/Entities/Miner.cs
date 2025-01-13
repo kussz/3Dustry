@@ -12,7 +12,7 @@ namespace GameObjects.Entities
     public class Miner : Entity
     {
         private GameResource _resource;
-        public Miner(Loader loader, Vector2 position, GameResource resource):base(position,new Vector2(2,3),loader,1)
+        public Miner(Loader loader, Vector2 position, GameResource resource,TextureHolder textureHolder):base(position,new Vector2(2,3),loader,1,textureHolder)
         {
             Type=EntityType.Miner;
             _resource = resource;

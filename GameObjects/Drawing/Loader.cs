@@ -13,7 +13,55 @@ namespace GameObjects.Drawing
         {
             _directX3DGraphics = directX3DGraphics;
         }
-        public MeshObject MakeTileSquare(Vector4 position, Tile type)
+        public MeshObject MakeMenuTile(float aspect,float size,Vector2 position)
+        {
+            float aspectX;
+            float aspectY;
+            //size /= 2;
+            if(aspect>=1)
+            {
+                aspectX = size;
+                aspectY = size / aspect;
+            }
+            else
+            {
+                aspectX = aspect*size;
+                aspectY = size;
+            }
+            Renderer.VertexDataStruct[] vertices =
+            {
+                new Renderer.VertexDataStruct
+                {
+                    position = new Vector4(-aspectX,-aspectY,0,1.0f),
+                    texCoord= new Vector2(0,0),
+                },
+                new Renderer.VertexDataStruct
+                {
+                    position = new Vector4(+aspectX,-aspectY,0,1.0f),
+                    texCoord= new Vector2(1,0),
+                },
+                new Renderer.VertexDataStruct
+                {
+                    position = new Vector4(-aspectX,+aspectY,0,1.0f),
+                    texCoord= new Vector2(0,1),
+                },
+                new Renderer.VertexDataStruct
+                {
+                    position = new Vector4(+aspectX,+aspectY,0,1.0f),
+                    texCoord= new Vector2(1,1),
+                },
+            };
+            uint[] indices = new uint[]
+            {
+                0, 1, 2,    1,3,2,
+            };
+
+
+
+            return new MeshObject(_directX3DGraphics,new Vector4(position.X,position.Y,0,1),
+                0, 0, 0, vertices, indices);
+        }
+        public MeshObject MakeTileSquare(Vector4 position)
         {
             Renderer.VertexDataStruct[] vertices = new Renderer.VertexDataStruct[4]
             {

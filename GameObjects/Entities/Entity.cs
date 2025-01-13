@@ -13,8 +13,9 @@ namespace GameObjects.Entities
     {
         public float Cooldown { get; set; } = 100f;
         public float Speed { get; set; }
+        public TextureHolder TextureHolder { get; set; }
         public Inventory Inventory { get; }
-        public Entity(Vector2 position, Vector2 size, Loader loader,float speed)
+        public Entity(Vector2 position, Vector2 size, Loader loader,float speed, TextureHolder textureHolder)
         {
             Inventory = new Inventory();
             Speed = speed;
@@ -22,6 +23,7 @@ namespace GameObjects.Entities
             Position = position;
             Size = size;
             Mesh = loader.MakeCube(new SharpDX.Vector4(Position.X, 0, Position.Y, 1), size, 0, 0, 0);
+            TextureHolder = textureHolder;
         }
         public MeshObject Mesh { get; set; }
         public Vector2 Position { get; set; }

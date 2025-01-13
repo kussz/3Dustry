@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,6 +28,7 @@ namespace GameObjects.GameLogic
 
         private Loader _loader;
         Entity? _entity;
+        Entity? _closestEntity;
         List<Entity> _entities;
         Entity[,]? _entityMap;
         Tile[][,]? _fullMap;
@@ -37,6 +39,9 @@ namespace GameObjects.GameLogic
         private TimeHelper _timeHelper;
         private bool _isDataLoaded = false;
         public RenderForm MainForm { get { return _renderForm; } }
+
+        private MenuTile _menu;
+
         public Game()
         {
             _renderForm = new RenderForm("My Game");
@@ -44,11 +49,12 @@ namespace GameObjects.GameLogic
 
             // Инициализация графической системы
             _directX3DGraphics = new DirectX3DGraphics(_renderForm);
-
             // Создание рендера
             _renderer = new Renderer(_directX3DGraphics);
             _renderer.CreateConstantBuffer();
             _loader = new Loader(_directX3DGraphics);
+            //_menu = _loader.MakeTileSquare(new Vector4(0, 0, 0, 1));
+            _menu = new MenuTile(_loader, _directX3DGraphics.Device, "Assets\\Menu\\Inventory.png",1,new Vector2(0,0));
             // Вспомогательные компоненты
             _inputHandler = new InputHandler();
             _entities = new List<Entity>();
@@ -58,6 +64,7 @@ namespace GameObjects.GameLogic
 
             // Таймер
             _timeHelper = new TimeHelper();
+            Cursor.Hide();
         }
         public async Task LoadGameDataAsync()
         {
@@ -74,12 +81,14 @@ namespace GameObjects.GameLogic
             _entityMap = new Entity[_fullMap[0].GetLength(0), _fullMap[0].GetLength(1)];
             _groundCompound = mapLoader.GetCompoundMap(_fullMap[0], 0);
             _oreCompound = mapLoader.GetCompoundMap(_fullMap[1], 0f);
-
+            Dictionaries.SetTextureHolder(EntityType.Miner, new TextureHolder(_directX3DGraphics.Device, "Assets\\Entities\\Miner\\"));
             // Создаем начальную сущность
-            _entity = new Miner(_loader, new Vector2(0, 0), new Copper(0));
+            _entity = new Miner(_loader, new Vector2(0, 0), new Copper(0),Dictionaries.GetTextureHolder(EntityType.Miner));
             //_entity = new Core(_loader, new Vector2(0, 0));
             _camera.Position = new Vector4(_fullMap[0].GetLength(0) / 2, 5.0f, _fullMap[0].GetLength(1) / 2, 1.0f);
+            _timeHelper.Update();
             _isDataLoaded = true;
+            
         }
 
         public void RenderFormResizedCallback(object sender, EventArgs args)
@@ -103,28 +112,70 @@ namespace GameObjects.GameLogic
                 
                 _renderForm.Text = "Loading...";
                 _renderer.LoadingRender();
-
+                
                 _renderer.EndRender();
                 return;
             }
+            _timeHelper.Update();
+            //AlignCursorToCenter();
+            ProceedInputs();
 
+            //_renderForm.Text = "FPS: " + _timeHelper.FPS.ToString();
+            //_renderForm.Text = _timeHelper.DeltaT.ToString();
+            _renderForm.Text = "X: " + _camera.Position.X + " Y: " + _camera.Position.Y + " Z: " + _camera.Position.Z;
+
+            
+            
+            Vector3 hitPoint = _camera.IntersectRayWithPlane(40f, _entity!.Size[1]);
+            Vector3 hitPointDiscrete = new Vector3((float)Math.Round(hitPoint.X - _entity.Size.X / 2), 0, (float)Math.Round(hitPoint.Z - _entity.Size.X / 2));
+            _entity.Mesh.MoveTo(hitPointDiscrete);
+            _closestEntity = GetClosestEntity();
+
+            Render(_camera.GetViewMatrix(), _camera.GetProjectionMatrix());
+
+
+            if (_inputHandler.LeftMouseClick && IsBuildable(_entity))
+            {
+                Build(_entity);
+            }
+            if (_inputHandler.RightMouseClick)
+            {
+                Destroy(_closestEntity);
+            }
+            
+        }
+        private Entity? GetClosestEntity()
+        {
+            return _entities
+            .Select(entity => new
+            {
+                Entity = entity,
+                IntersectionPoint = entity.IntersectWithLook(_camera, 40)
+            })
+            .Where(x => x.IntersectionPoint != Vector3.Zero)
+            .OrderBy(x => Vector3.Distance((Vector3)_camera.Position, x.IntersectionPoint))
+            .Select(x => x.Entity)
+            .FirstOrDefault();
+        }
+        private void AlignCursorToCenter()
+        {
             var center = _renderForm.PointToScreen(new System.Drawing.Point(
                     _renderForm.Width / 2,
                     _renderForm.Height / 2
                 ));
             Cursor.Position = center;
-            Cursor.Hide();
-
+        }
+        private void ProceedInputs()
+        {
             _inputHandler.Update();
             if (_inputHandler.Escape)
                 Environment.Exit(0);
-            
+
             float xstep = 0;
             float ystep = 0;
             float zstep = 0;
             float step = MOVE_STEP * (_inputHandler.Shift ? 2 : 1);
-            _timeHelper.Update();
-            
+            TextureHolder.Update(_timeHelper.DeltaT);
             if (_inputHandler.Forward)
                 ystep += step * _timeHelper.DeltaT;
             if (_inputHandler.Backward)
@@ -146,18 +197,9 @@ namespace GameObjects.GameLogic
             _camera.MoveBy(xstep * (float)Math.Sin(_camera._yaw - Math.PI / 2), zstep, xstep * (float)Math.Cos(_camera._yaw - Math.PI / 2));
             _camera.PitchBy(_inputHandler.MouseY);
             _camera.YawBy(_inputHandler.MouseX);
-
-            //_renderForm.Text = "FPS: " + _timeHelper.FPS.ToString();
-            //_renderForm.Text = _timeHelper.DeltaT.ToString();
-            _renderForm.Text = "X: " + _camera.Position.X + " Y: " + _camera.Position.Y + " Z: " + _camera.Position.Z;
-
-            Matrix viewMatrix = _camera.GetViewMatrix();
-            Matrix projectionMatrix = _camera.GetProjectionMatrix();
-            Vector3 hitPoint = _camera.IntersectRayWithPlane(40f, _entity!.Size[1]);
-            Vector3 hitPointDiscrete = new Vector3((float)Math.Round(hitPoint.X - _entity.Size.X / 2), 0, (float)Math.Round(hitPoint.Z - _entity.Size.X / 2));
-            _entity.Mesh.MoveTo(hitPointDiscrete);
-
-
+        }
+        private void Render(Matrix viewMatrix, Matrix projectionMatrix)
+        {
             _renderer.BeginRender();
             _renderer.SetPerObjectConstantBuffer(0);
             foreach (var comp in _groundCompound!)
@@ -178,74 +220,33 @@ namespace GameObjects.GameLogic
 
             }
             _directX3DGraphics.EnableDepthTest();
-            var closestEntity = _entities
-            .Select(entity => new
-            {
-                Entity = entity,
-                IntersectionPoint = entity.IntersectWithLook(_camera, 40)
-            })
-            .Where(x => x.IntersectionPoint != Vector3.Zero)
-            .OrderBy(x => Vector3.Distance((Vector3)_camera.Position, x.IntersectionPoint))
-            .Select(x => x.Entity)
-            .FirstOrDefault();
+            
             foreach (var entity in _entities)
             {
                 entity.Produce(_timeHelper.DeltaT);
-                _renderer.SetSelected(entity==closestEntity);
-
-                ShaderResourceView textur = Dictionaries.GetTexture(_entity.Type);
-                if (textur == null)
-                {
-                    Dictionaries.SetTexture(_entity.Type, TextureLoader.GetEntityTexture(_directX3DGraphics, _entity.Type));
-                    textur = Dictionaries.GetTexture(_entity.Type);
-                }
+                _renderer.SetSelected(entity == _closestEntity);
                 _renderer.SetPerObjectConstantBuffer(Convert.ToInt32(!entity.IsBuilt));
-                _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, textur);
+                _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, entity.TextureHolder.CurrentFrame);
                 _renderer.UpdatePerObjectConstantBuffers(entity.Mesh.GetWorldMatrix(),
                     viewMatrix, projectionMatrix);
                 _renderer.RenderMeshObject(entity.Mesh);
 
             }
             _renderer.SetSelected(false);
-            ShaderResourceView texture = Dictionaries.GetTexture(_entity.Type);
-            if (texture == null)
-            {
-                Dictionaries.SetTexture(_entity.Type, TextureLoader.GetEntityTexture(_directX3DGraphics, _entity.Type));
-                texture = Dictionaries.GetTexture(_entity!.Type);
-            }
             if (IsBuildable(_entity))
             {
-                _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, texture);
+                _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, _entity.TextureHolder.Textures[0]);
                 _renderer.SetPerObjectConstantBuffer(1);
                 _renderer.UpdatePerObjectConstantBuffers(_entity.Mesh.GetWorldMatrix(),
                     viewMatrix, projectionMatrix);
                 _renderer.RenderMeshObject(_entity.Mesh);
             }
-
-
-
-
-            //foreach (var cube in _cubes)
-            //{
-            //    _renderer.UpdatePerObjectConstantBuffers(cube.GetWorldMatrix(),
-            //    viewMatrix, projectionMatrix);
-            //    _renderer.RenderMeshObject(cube);
-
-            //}
-            //_renderer.RenderMeshObject(_cube);
-
+            _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, _menu.Mesh.Texture);
+            _renderer.SetPerObjectConstantBuffer(0);
+            _renderer.UpdatePerObjectConstantBuffers(_menu.Mesh.GetWorldMatrix(),Matrix.Identity,Matrix.Identity);
+            _renderer.RenderMeshObject(_menu.Mesh);
             _renderer.EndRender();
-            if (_inputHandler.LeftMouseClick && IsBuildable(_entity))
-            {
-                Build(_entity);
-            }
-            if (_inputHandler.RightMouseClick)
-            {
-                Destroy(closestEntity);
-            }
-            
         }
-
         public void Run()
         {
             _ = LoadGameDataAsync();
@@ -257,31 +258,36 @@ namespace GameObjects.GameLogic
             _renderer.Dispose();
             _directX3DGraphics.Dispose();
         }
-        private bool IsBuildable(Entity entity)
+        private bool IsBuildable(Entity? entity)
         {
-            if (!IsInsideBounds(entity))
-                return false;
-            for (int i = (int)entity.Mesh.Position.Z; i < (int)entity.Mesh.Position.Z+ entity.Size[0];i++)
-                for(int j = (int)entity.Mesh.Position.X; j < (int)entity.Mesh.Position.X+ entity.Size[0];j++)
-                {
-                    if (_collideMap![i,j]==false)
-                        return false;
-                }
-            return true;
+            if(entity!=null)
+            {
+
+                if (!IsInsideBounds(entity))
+                    return false;
+                for (int i = (int)entity.Mesh.Position.Z; i < (int)entity.Mesh.Position.Z+ entity.Size[0];i++)
+                    for(int j = (int)entity.Mesh.Position.X; j < (int)entity.Mesh.Position.X+ entity.Size[0];j++)
+                    {
+                        if (_collideMap![i,j]==false)
+                            return false;
+                    }
+                return true;
+            }
+            return false;
         }
         private void Build(Entity entity)
         {
             entity.Position = new Vector2(entity.Mesh.Position.X, entity.Mesh.Position.Z);
-            entity = new Miner(_loader, entity.Position, GetPerspectiveResource(entity));
+            entity = new Miner(_loader, entity.Position, GetPerspectiveResource(entity),Dictionaries.GetTextureHolder(entity.Type));
             entity.IsBuilt = true;
             ChangeCollisionMap(entity,false);
             _entityMap![(int)entity.Position.Y, (int)entity.Position.X] = entity;
             _entities.Add(entity);
             //_entity = new Core(_loader, new Vector2(0, 0));
-            _entity = new Miner(_loader, new Vector2(0, 0), new Copper(0));
+            _entity = new Miner(_loader, new Vector2(0, 0), new Copper(0), Dictionaries.GetTextureHolder(entity.Type));
         }
 
-        private void Destroy(Entity entity)
+        private void Destroy(Entity? entity)
         {
             if (entity!=null)
             {
