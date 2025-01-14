@@ -117,7 +117,7 @@ namespace GameObjects.Drawing
             };
             var samplerDescription = new SamplerStateDescription()
             {
-                Filter = Filter.MinMagMipLinear, // Линейная фильтрация
+                Filter = Filter.MinMagMipPoint, // Линейная фильтрация
                 AddressU = TextureAddressMode.Mirror, // Зацикливание текстуры по оси U
                 AddressV = TextureAddressMode.Mirror, // Зацикливание текстуры по оси V
                 AddressW = TextureAddressMode.Mirror, // Зацикливание текстуры по оси W

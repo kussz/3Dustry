@@ -50,7 +50,7 @@ namespace GameObjects.Entities
 
             Vector3 intersectionPoint = IntersectWithPlaneY((Vector3)Position, lookDirection, planeY);
             if (Vector3.Distance((Vector3)Position, intersectionPoint) > distance)
-                return Vector3.Zero;
+                return Vector3.Zero-1;
             return intersectionPoint;
         }
 
@@ -59,7 +59,7 @@ namespace GameObjects.Entities
             // Проверяем, чтобы направление не было параллельно плоскости
             if (Math.Abs(direction.Y) < 1e-6)
             {
-                return Vector3.Zero; // Нет пересечения
+                return Vector3.Zero-1; // Нет пересечения
             }
 
             // Вычисляем параметр t
@@ -68,7 +68,7 @@ namespace GameObjects.Entities
             // Если пересечение позади камеры, то игнорируем
             if (t < 0)
             {
-                return Vector3.Zero;
+                return Vector3.Zero - 1;
             }
 
             // Вычисляем точку пересечения

@@ -12,6 +12,7 @@ namespace GameObjects.GameLogic
     {
         public MenuTile Hotbar;
         public MenuTile SelectedCell;
+        public MenuTile CrossHair;
         private float _hotbarSize = 0.6f;
         private float _stepsize = 10 / 73f;
         private float _wallWidth = 0.1f;
@@ -19,6 +20,7 @@ namespace GameObjects.GameLogic
         {
             Hotbar = new MenuTile("Assets\\Menu\\Inventory.png", _hotbarSize, new Vector2(0, -0.9f));
             SelectedCell = new MenuTile("Assets\\Menu\\Selected.png", _hotbarSize*_stepsize, new Vector2(_stepsize*_hotbarSize*(1-_wallWidth), -0.9f));
+            CrossHair = new MenuTile("Assets\\Menu\\Crosshair.png", 0.04f, new Vector2(0, 0));
             SetSelectedCell(1);
         }
         public void SetSelectedCell(int index)

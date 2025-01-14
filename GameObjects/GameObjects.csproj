@@ -83,6 +83,9 @@
     <None Update="Assets\Maps\map2\ores.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Assets\Menu\Crosshair.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Assets\Menu\Inventory.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

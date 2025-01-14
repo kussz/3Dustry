@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using GameObjects.Drawing;
 using GameObjects.Entities;
+using GameObjects.Interfaces;
 using GameObjects.Resources;
 using SharpDX;
 
@@ -131,7 +132,7 @@ namespace GameObjects.GameLogic
             
             
             Vector3 hitPoint = _camera.IntersectRayWithPlane(40f, 0);
-            Vector3 hitPointDiscrete = new Vector3((float)Math.Round(hitPoint.X), 0, (float)Math.Round(hitPoint.Z));
+            Vector3 hitPointDiscrete = new Vector3((float)Math.Round(hitPoint.X-_entity.Size.X/2%1)+ _entity.Size.X / 2 % 1, 0, (float)Math.Round(hitPoint.Z - _entity.Size.X / 2 % 1)+ _entity.Size.X / 2 % 1);
             _entity.Mesh.MoveTo(hitPointDiscrete);
             _closestEntity = GetClosestEntity();
 
@@ -201,8 +202,8 @@ namespace GameObjects.GameLogic
             if (_inputHandler.Down)
                 zstep -= step * _timeHelper.DeltaT;
             if(_inputHandler.R)
-                if (_entity is Conveyor conv)
-                    conv.Rotate((float)Math.PI / 2);
+                if (_entity is IRotatable conv)
+                    conv.Rotate();
             _camera.MoveBy(ystep * (float)Math.Sin(_camera._yaw), zstep, ystep * (float)Math.Cos(_camera._yaw));
             _camera.MoveBy(xstep * (float)Math.Sin(_camera._yaw - Math.PI / 2), zstep, xstep * (float)Math.Cos(_camera._yaw - Math.PI / 2));
             _camera.PitchBy(_inputHandler.MouseY);
@@ -240,6 +241,7 @@ namespace GameObjects.GameLogic
             float aspect = (float)_renderForm.ClientSize.Width / _renderForm.ClientSize.Height;
             _renderer.RenderMenuItem(_menu.Hotbar,aspect);
             _renderer.RenderMenuItem(_menu.SelectedCell,aspect);
+            _renderer.RenderMenuItem(_menu.CrossHair,aspect);
             _renderer.EndRender();
         }
         public void Run()
@@ -260,8 +262,8 @@ namespace GameObjects.GameLogic
 
                 if (!IsInsideBounds(entity))
                     return false;
-                for (int i = (int)entity.Mesh.Position.Z; i < (int)entity.Mesh.Position.Z+ entity.Size[0];i++)
-                    for(int j = (int)entity.Mesh.Position.X; j < (int)entity.Mesh.Position.X+ entity.Size[0];j++)
+                for (int i = (int)entity.Mesh.Position.Z - (int)entity.Size.X / 2; i < (int)entity.Mesh.Position.Z + entity.Size[0] / 2; i++)
+                    for (int j = (int)entity.Mesh.Position.X - (int)entity.Size.X / 2; j < (int)entity.Mesh.Position.X + entity.Size[0] / 2; j++)
                     {
                         if (_collideMap![i,j]==false)
                             return false;
@@ -276,8 +278,17 @@ namespace GameObjects.GameLogic
             ChangeCollisionMap(entity,false);
             _entityMap![(int)entity.Position.Y, (int)entity.Position.X] = entity;
             _entities.Add(entity);
+            if(entity is Conveyor conveyor)
+            {
+                Vector2 vec = conveyor.GetDirection();
+                conveyor.BindConveyors(_entityMap);
+            }
             //_entity = new Core(_loader, new Vector2(0, 0));
             _entity = EntityFactory.CreateEntity(_inputHandler.HotbarSelection,new Copper(0));
+            if (_entity is IRotatable rot1 && entity is IRotatable rot2)
+            {
+                rot1.SetAngle(rot2.GetAngle());
+            }
             
         }
 
@@ -293,24 +304,24 @@ namespace GameObjects.GameLogic
         }
         private void ChangeCollisionMap(Entity entity, bool value)
         {
-            for (int i = (int)entity.Position.Y; i < (int)entity.Position.Y + entity.Size[0]; i++)
-                for (int j = (int)entity.Position.X; j < (int)entity.Position.X + entity.Size[0]; j++)
+            for (int i = (int)entity.Position.Y - (int)entity.Size.X / 2; i < (int)entity.Position.Y + entity.Size[0] / 2; i++)
+                for (int j = (int)entity.Position.X - (int)entity.Size.X / 2; j < (int)entity.Position.X + entity.Size[0] / 2; j++)
                     _collideMap![i, j] = value;
         }
         private bool IsInsideBounds(Entity entity)
         {
-            if ((int)entity.Mesh.Position.X < 0 || (int)entity.Mesh.Position.Z < 0)
+            if ((int)entity.Mesh.Position.X-(int)entity.Size.X/2 < 0 || (int)entity.Mesh.Position.Z - (int)entity.Size.X/2 < 0)
                 return false;
-            if ((int)entity.Mesh.Position.Z + entity.Size[0] > _entityMap!.GetLength(0) ||
-                (int)entity.Mesh.Position.X + entity.Size[0] > _entityMap.GetLength(1))
+            if ((int)entity.Mesh.Position.Z + entity.Size[0]/2 > _entityMap!.GetLength(0) ||
+                (int)entity.Mesh.Position.X + entity.Size[0]/2 > _entityMap.GetLength(1))
                 return false;
             return true;
         }
         private GameResource GetPerspectiveResource(Entity entity)
         {
             Inventory resources = new Inventory();
-            for (int i = (int)entity.Mesh.Position.Z; i < (int)entity.Mesh.Position.Z + entity.Size[0]; i++)
-                for (int j = (int)entity.Mesh.Position.X; j < (int)entity.Mesh.Position.X + entity.Size[0]; j++)
+            for (int i = (int)entity.Mesh.Position.Z-(int)entity.Size.X/2; i < (int)entity.Mesh.Position.Z + entity.Size[0]/2; i++)
+                for (int j = (int)entity.Mesh.Position.X - (int)entity.Size.X / 2; j < (int)entity.Mesh.Position.X + entity.Size[0]/2; j++)
                     if(_fullMap[1][i, j]!=Tile.None)
                         resources.Add(ResourceFactory.CreateResource(_fullMap[1][i, j], 1));
             return resources.GetMostPerspective();

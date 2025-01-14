@@ -300,7 +300,7 @@ namespace GameObjects.Drawing
             ShaderResourceView textureView = new ShaderResourceView(_directX3DGraphics.Device, texture);
             var samplerDescription = new SamplerStateDescription()
             {
-                Filter = Filter.MinMagMipLinear, // Линейная фильтрация
+                Filter = Filter.MinMagMipPoint, // Линейная фильтрация
                 AddressU = TextureAddressMode.Mirror, // Зацикливание текстуры по оси U
                 AddressV = TextureAddressMode.Mirror, // Зацикливание текстуры по оси V
                 AddressW = TextureAddressMode.Mirror, // Зацикливание текстуры по оси W

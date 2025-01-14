@@ -71,8 +71,8 @@ namespace GameObjects.Entities
         {
 
             // Установите значения для tMin и tMax
-            float tMin = (Position.X - origin.X) / direction.X;
-            float tMax = (Position.X + Size.X - origin.X) / direction.X;
+            float tMin = (Position.X-Size.X/2 - origin.X) / direction.X;
+            float tMax = (Position.X + Size.X/2 - origin.X) / direction.X;
 
             // Обмен значениями, если необходимо
             if (tMin > tMax)
@@ -110,8 +110,8 @@ namespace GameObjects.Entities
             }
 
             // Проверка по оси Z
-            float tzMin = (Position.Y - origin.Z) / direction.Z;
-            float tzMax = (Position.Y + Size.X - origin.Z) / direction.Z;
+            float tzMin = (Position.Y - Size.X/2 - origin.Z) / direction.Z;
+            float tzMax = (Position.Y + Size.X/2 - origin.Z) / direction.Z;
 
             if (tzMin > tzMax)
             {
