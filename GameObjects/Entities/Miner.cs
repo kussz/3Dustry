@@ -12,7 +12,7 @@ namespace GameObjects.Entities
     public class Miner : Entity
     {
         private GameResource _resource;
-        public Miner(Loader loader, Vector2 position, GameResource resource,TextureHolder textureHolder):base(position,new Vector2(2,3),loader,1,textureHolder)
+        public Miner(Vector2 position, GameResource resource,TextureHolder textureHolder):base(position,new Vector2(2,3),1,textureHolder)
         {
             Type=EntityType.Miner;
             _resource = resource;
@@ -21,7 +21,7 @@ namespace GameObjects.Entities
         protected override void Act()
         {
             Inventory.Add(_resource);
-            Mesh.Position = new Vector4(Mesh.Position.X, Inventory.Get("Copper"), Mesh.Position.Z, 1);
+            Mesh.Position = new Vector4(Mesh.Position.X, Inventory.Get(Tile.Copper), Mesh.Position.Z, 1);
         }
         override public void Build(GameResource resource)
         {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GameObjects.Drawing;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,13 +10,13 @@ namespace GameObjects.Resources
 {
     public abstract class GameResource
     {
-        protected GameResource(string name,int quantity)
+        protected GameResource(Tile type,int quantity)
         {
-            Name=name;
+            Type=type;
             Quantity =quantity;
         }
-        public string Name { get; }
         public int Quantity { get; set; }
+        public Tile Type { get; set; }
         public static GameResource operator +(GameResource a, GameResource b)
         {
             if(a.GetType() != b.GetType())

@@ -18,6 +18,7 @@ namespace GameObjects.Drawing
     {
         None,
         Core,
-        Miner
+        Miner,
+        Conveyor
     }
 }

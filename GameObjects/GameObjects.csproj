@@ -20,6 +20,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Assets\Entities\Conveyor\Conveyor001.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Entities\Conveyor\Conveyor002.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Entities\Conveyor\Conveyor003.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Entities\Conveyor\Conveyor004.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Entities\Conveyor\Conveyor005.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Assets\Entities\core.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

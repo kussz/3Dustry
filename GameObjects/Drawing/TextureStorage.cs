@@ -22,7 +22,8 @@ namespace GameObjects.Drawing
             {"#AE7C5B",Tile.Copper },
             {"#8E85A2",Tile.Lead }
         };
-        private static Dictionary<EntityType, TextureHolder> _textures = new Dictionary<EntityType, TextureHolder>();
+        private static Dictionary<EntityType, TextureHolder> _entityTextures = new Dictionary<EntityType, TextureHolder>();
+        private static Dictionary<Tile, ShaderResourceView> _tileTextures = new Dictionary<Tile, ShaderResourceView>();
         public static Tile GetTileFromColorString(string key)
         {
             if (_keyValuePairs.TryGetValue(key, out Tile tile))
@@ -37,12 +38,22 @@ namespace GameObjects.Drawing
         //}
         public static TextureHolder? GetTextureHolder(EntityType type)
         {
-            if (_textures.TryGetValue(type, out TextureHolder texture))
+            if (_entityTextures.TryGetValue(type, out TextureHolder texture))
             {
                 return texture;
             }
-            _textures.Add(type,new TextureHolder(_graphics.Device,GetTexturePath(type)));
-            return _textures[type];
+            _entityTextures.Add(type,new TextureHolder(_graphics.Device,GetTexturePath(type)));
+            return _entityTextures[type];
+        }
+
+        public static ShaderResourceView? GetTexture(Tile type)
+        {
+            if (_tileTextures.TryGetValue(type, out ShaderResourceView texture))
+            {
+                return texture;
+            }
+            _tileTextures.Add(type, TextureLoader.GetFloorTexture(_graphics,type));
+            return _tileTextures[type];
         }
         private static Dictionary<Tile, string> _tileTexturePaths = new Dictionary<Tile, string>
         {
@@ -54,7 +65,8 @@ namespace GameObjects.Drawing
         private static Dictionary<EntityType, string> _entityTexturePaths = new Dictionary<EntityType, string>
         {
             {EntityType.Core,"Assets/Entities/Core"},
-            {EntityType.Miner,"Assets/Entities/Miner"}
+            {EntityType.Miner,"Assets/Entities/Miner"},
+            {EntityType.Conveyor,"Assets/Entities/Conveyor" }
         };
         public static string GetTexturePath(Tile key)
         { return _tileTexturePaths[key]; }

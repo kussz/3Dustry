@@ -106,63 +106,63 @@ namespace GameObjects.Drawing
 
                     new Renderer.VertexDataStruct // top 0
                     {
-                        position = new Vector4(0, height, deltaWidth, 1.0f),
+                        position = new Vector4(-deltaWidth/2, height, deltaWidth/2, 1.0f),
                         texCoord = new Vector2(3/4f,3/4f) //yellow
                     },
                     new Renderer.VertexDataStruct // top 1
                     {
-                        position = new Vector4(0, height, 0, 1.0f),
+                        position = new Vector4(-deltaWidth/2, height, -deltaWidth/2, 1.0f),
                         texCoord = new Vector2(3/4f, 1/4f) //red
                     },
                     new Renderer.VertexDataStruct // top 2
                     {
-                        position = new Vector4(deltaWidth, height, 0, 1.0f),
+                        position = new Vector4(deltaWidth/2, height, -deltaWidth/2, 1.0f),
                         texCoord = new Vector2(1/4f, 1/4f)//cyan
                     },
                     new Renderer.VertexDataStruct // top 3
                     {
-                        position = new Vector4(deltaWidth, height, deltaWidth, 1.0f),
+                        position = new Vector4(deltaWidth/2, height, deltaWidth/2, 1.0f),
                         texCoord = new Vector2(1/4f,3/4f)//magenta
                     },
 
                     new Renderer.VertexDataStruct // bottom 4
                     {
-                        position = new Vector4(0, 0, 0, 1.0f),
+                        position = new Vector4(-deltaWidth/2, 0, -deltaWidth/2, 1.0f),
                         texCoord = new Vector2(1f, 1/4f)//green
                     },
                     new Renderer.VertexDataStruct // bottom 45 (5)
                     {
-                        position = new Vector4(0, 0, 0, 1.0f),
+                        position = new Vector4(-deltaWidth/2, 0, -deltaWidth/2, 1.0f),
                         texCoord = new Vector2(3/4f, 0.0f)//green
                     },
                     new Renderer.VertexDataStruct // bottom 5 (6)
                     {
-                        position = new Vector4(0, 0,deltaWidth, 1.0f),
+                        position = new Vector4(-deltaWidth/2, 0,deltaWidth/2, 1.0f),
                         texCoord = new Vector2(1.0f, 3/4f)//blue
                     },
                     new Renderer.VertexDataStruct // bottom 56 (7)
                     {
-                        position = new Vector4(0, 0,deltaWidth, 1.0f),
+                        position = new Vector4(-deltaWidth/2, 0,deltaWidth/2, 1.0f),
                         texCoord = new Vector2(3 / 4f, 1f)//blue
                     },
                     new Renderer.VertexDataStruct // bottom 6 (8)
                     {
-                        position = new Vector4(deltaWidth, 0, deltaWidth, 1.0f),
+                        position = new Vector4(deltaWidth/2, 0, deltaWidth/2, 1.0f),
                         texCoord = new Vector2(1 / 4f, 1.0f)//black
                     },
                     new Renderer.VertexDataStruct // bottom 67 (9)
                     {
-                        position = new Vector4(deltaWidth, 0, deltaWidth, 1.0f),
+                        position = new Vector4(deltaWidth/2, 0, deltaWidth/2, 1.0f),
                         texCoord = new Vector2(0f, 3 / 4f)//black
                     },
                     new Renderer.VertexDataStruct // bottom 7 (10)
                     {
-                        position = new Vector4(deltaWidth, 0, 0, 1.0f),
+                        position = new Vector4(deltaWidth/2, 0, -deltaWidth/2, 1.0f),
                         texCoord = new Vector2(0f, 1/ 4f)//white
                     },
                     new Renderer.VertexDataStruct // bottom 78 (11)
                     {
-                        position = new Vector4(deltaWidth, 0, 0, 1.0f),
+                        position = new Vector4(deltaWidth/2, 0, -deltaWidth/2, 1.0f),
                         texCoord = new Vector2(1 / 4f, 0f)//white
                     }
                };

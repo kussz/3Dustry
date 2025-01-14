@@ -40,7 +40,7 @@ namespace GameObjects.Drawing
         {
             _frameGlobal += DeltaT*10;
             if (_frameGlobal >= 1000)
-                _frameGlobal = 0;
+                _frameGlobal %= 1000;
         }
         private ShaderResourceView GetCurrentFrame()
         {
@@ -48,7 +48,7 @@ namespace GameObjects.Drawing
                 _frameLocal -= 1000;
             _frame += _frameGlobal - _frameLocal;
             if(_frame>=Textures.Length)
-                _frame=0;
+                _frame%=Textures.Length;
             _frameLocal = _frameGlobal;
             return Textures[(int)_frame];
         }

@@ -186,5 +186,15 @@ namespace GameObjects.Drawing
 
             }
         }
+        public void RenderConveyorTiles(Conveyor conveyor, Matrix viewMatrix, Matrix projectionMatrix)
+        {
+            foreach ( var tile in conveyor.Resources)
+            {
+                _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, tile.Texture);
+                UpdatePerObjectConstantBuffers(tile.Mesh.GetWorldMatrix(),
+                    viewMatrix, projectionMatrix);
+                RenderMeshObject(tile.Mesh);
+            }
+        }
     }
 }

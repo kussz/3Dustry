@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GameObjects.Drawing;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +9,7 @@ namespace GameObjects.Resources
 {
     public class Copper : GameResource
     {
-        public Copper(int quantity) : base("Copper",quantity)
+        public Copper(int quantity) : base(Tile.Copper,quantity)
         { }
     }
 }

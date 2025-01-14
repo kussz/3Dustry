@@ -25,10 +25,8 @@ namespace GameObjects.GameLogic
         public bool Up { get; private set; }
         public bool Down { get; private set; }
         public bool Shift { get; private set; }
-        public bool Aplus { get; private set; }
-        public bool Aminus { get; private set; }
-        public bool Bplus { get; private set; }
-        public bool Bminus { get; private set; }
+        public bool R { get; private set; }
+        private bool _wasRDown = false;
         public float MouseX { get; private set; }
         public float MouseY { get; private set; }
         public bool Escape { get; private set; } = false;
@@ -85,22 +83,18 @@ namespace GameObjects.GameLogic
                 Shift = true;
             else
                 Shift = false;
-            if (keyboardState.IsPressed(Key.NumberPad8))
-                Aplus = true;
+            if (keyboardState.IsPressed(Key.R) && !_wasRDown)
+            {
+                R = true; // Считаем щелчком, если кнопка была нажата сейчас
+                _wasRDown = true;
+            }
+            else if (!keyboardState.IsPressed(Key.R))
+            {
+                _wasRDown = false;
+                R = false;
+            }
             else
-                Aplus = false;
-            if (keyboardState.IsPressed(Key.NumberPad2))
-                Aminus = true;
-            else
-                Aminus = false;
-            if (keyboardState.IsPressed(Key.NumberPad6))
-                Bplus = true;
-            else
-                Bplus = false;
-            if (keyboardState.IsPressed(Key.NumberPad4))
-                Bminus = true;
-            else
-                Bminus = false;
+                R = false;
             if (keyboardState.IsPressed(Key.Escape))
                 Escape = true;
             for (int i = 0; i < _hotbarKeys.Length; i++)

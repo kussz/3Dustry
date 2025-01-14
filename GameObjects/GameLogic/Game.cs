@@ -55,8 +55,9 @@ namespace GameObjects.GameLogic
             _loader = new Loader(_directX3DGraphics);
             //_menu = _loader.MakeTileSquare(new Vector4(0, 0, 0, 1));
             MenuTile.Configure(_loader, _directX3DGraphics.Device);
-            EntityFactory.Configure(_loader);
+            ResourceTile.Configure(_loader);
             TextureStorage.Configure(_directX3DGraphics);
+            Entity.Configure(_loader);
             _menu = new Menu();
             // Вспомогательные компоненты
             _inputHandler = new InputHandler();
@@ -129,8 +130,8 @@ namespace GameObjects.GameLogic
 
             
             
-            Vector3 hitPoint = _camera.IntersectRayWithPlane(40f, _entity!.Size[1]);
-            Vector3 hitPointDiscrete = new Vector3((float)Math.Round(hitPoint.X - _entity.Size.X / 2), 0, (float)Math.Round(hitPoint.Z - _entity.Size.X / 2));
+            Vector3 hitPoint = _camera.IntersectRayWithPlane(40f, 0);
+            Vector3 hitPointDiscrete = new Vector3((float)Math.Round(hitPoint.X), 0, (float)Math.Round(hitPoint.Z));
             _entity.Mesh.MoveTo(hitPointDiscrete);
             _closestEntity = GetClosestEntity();
 
@@ -199,7 +200,9 @@ namespace GameObjects.GameLogic
                 zstep += step * _timeHelper.DeltaT;
             if (_inputHandler.Down)
                 zstep -= step * _timeHelper.DeltaT;
-
+            if(_inputHandler.R)
+                if (_entity is Conveyor conv)
+                    conv.Rotate((float)Math.PI / 2);
             _camera.MoveBy(ystep * (float)Math.Sin(_camera._yaw), zstep, ystep * (float)Math.Cos(_camera._yaw));
             _camera.MoveBy(xstep * (float)Math.Sin(_camera._yaw - Math.PI / 2), zstep, xstep * (float)Math.Cos(_camera._yaw - Math.PI / 2));
             _camera.PitchBy(_inputHandler.MouseY);
@@ -219,7 +222,14 @@ namespace GameObjects.GameLogic
             {
                 entity.Produce(_timeHelper.DeltaT);
                 _renderer.RenderEntity(entity, viewMatrix, projectionMatrix, entity == _closestEntity);
+                
 
+            }
+            _renderer.SetTransparent(0);
+            _renderer.SetSelected(false);
+            foreach (var conveyor in _entities.OfType<Conveyor>())
+            {
+                _renderer.RenderConveyorTiles(conveyor, viewMatrix, projectionMatrix);
             }
             if (IsBuildable(_entity))
             {
@@ -268,6 +278,7 @@ namespace GameObjects.GameLogic
             _entities.Add(entity);
             //_entity = new Core(_loader, new Vector2(0, 0));
             _entity = EntityFactory.CreateEntity(_inputHandler.HotbarSelection,new Copper(0));
+            
         }
 
         private void Destroy(Entity? entity)

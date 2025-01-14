@@ -10,19 +10,16 @@ namespace GameObjects.Entities
 {
     public class EntityFactory
     {
-        private static Loader _loader;
-        public static void Configure(Loader loader)
-        {
-            _loader = loader;
-        }
         public static Entity? CreateEntity(int number,GameResource resource)
         {
             switch(number)
             {
                 case 1:
-                    return new Core(_loader, new SharpDX.Vector2(0, 0), TextureStorage.GetTextureHolder(EntityType.Core));
+                    return new Core(new SharpDX.Vector2(0, 0), TextureStorage.GetTextureHolder(EntityType.Core));
                 case 2:
-                    return new Miner(_loader, new SharpDX.Vector2(0, 0), resource, TextureStorage.GetTextureHolder(EntityType.Miner));
+                    return new Miner(new SharpDX.Vector2(0, 0), resource, TextureStorage.GetTextureHolder(EntityType.Miner));
+                case 3:
+                    return new Conveyor(new SharpDX.Vector2(0,0),TextureStorage.GetTextureHolder(EntityType.Conveyor));
                 default:
                     return null;
             }

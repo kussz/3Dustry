@@ -1,4 +1,5 @@
-﻿using GameObjects.Resources;
+﻿using GameObjects.Drawing;
+using GameObjects.Resources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,9 +31,9 @@ namespace GameObjects.GameLogic
                 }
             }
         }
-        public int Get(string name)
+        public int Get(Tile type)
         {
-            var res = _resources.SingleOrDefault(r=>r.Name== name);
+            var res = _resources.SingleOrDefault(r=>r.Type== type);
             if (res == null)
                 return 0;
             return res.Quantity;

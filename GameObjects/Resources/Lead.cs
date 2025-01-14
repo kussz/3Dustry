@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GameObjects.Drawing;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,6 @@ namespace GameObjects.Resources
 {
     public class Lead : GameResource
     {
-        public Lead(int quantity) : base("Lead", quantity) { }
+        public Lead(int quantity) : base(Tile.Lead, quantity) { }
     }
 }
