@@ -1,5 +1,6 @@
 ﻿using GameObjects.Drawing;
 using GameObjects.Resources;
+using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,16 +11,31 @@ namespace GameObjects.Entities
 {
     public class EntityFactory
     {
-        public static Entity? CreateEntity(int number,GameResource resource)
+        public static Entity? CreateEntity(Entity entity,GameResource resource,int rot)
         {
-            switch(number)
+            Vector2 pos = new Vector2(entity.Mesh.Position.X, entity.Mesh.Position.Z);
+            switch(entity.Type)
+            {
+                case EntityType.Core:
+                    return new Core(pos, TextureStorage.GetTextureHolder(EntityType.Core));
+                case EntityType.Miner:
+                    return new Miner(pos, resource, TextureStorage.GetTextureHolder(EntityType.Miner));
+                case EntityType.Conveyor:
+                    return new Conveyor(pos,TextureStorage.GetTextureHolder(EntityType.Conveyor),rot);
+                default:
+                    return null;
+            }
+        }
+        public static Entity? CreateEntity(int number, GameResource resource)
+        {
+            switch (number)
             {
                 case 1:
-                    return new Core(new SharpDX.Vector2(0, 0), TextureStorage.GetTextureHolder(EntityType.Core));
+                    return new Core(Vector2.Zero, TextureStorage.GetTextureHolder(EntityType.Core));
                 case 2:
-                    return new Miner(new SharpDX.Vector2(0, 0), resource, TextureStorage.GetTextureHolder(EntityType.Miner));
+                    return new Miner(Vector2.Zero, resource, TextureStorage.GetTextureHolder(EntityType.Miner));
                 case 3:
-                    return new Conveyor(new SharpDX.Vector2(0,0),TextureStorage.GetTextureHolder(EntityType.Conveyor));
+                    return new Conveyor(Vector2.Zero, TextureStorage.GetTextureHolder(EntityType.Conveyor),0);
                 default:
                     return null;
             }

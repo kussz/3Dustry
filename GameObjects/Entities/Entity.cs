@@ -31,7 +31,7 @@ namespace GameObjects.Entities
             Mesh = _loader.MakeCube(new SharpDX.Vector4(Position.X, 0, Position.Y, 1), size, 0, 0, 0);
             TextureHolder = textureHolder;
         }
-        public virtual void Build(GameResource resource)
+        public void Build()
         {
             Position = new Vector2(Mesh.Position.X, Mesh.Position.Z);
             IsBuilt = true;
@@ -153,6 +153,12 @@ namespace GameObjects.Entities
             }
 
             return Vector3.Zero; // Нет положительных пересечений
+        }
+        public ResourceTile ConvertResToTile(Tile type)
+        {
+            var tile = Inventory.GetResource(type);
+            tile.Quantity--;
+            return new ResourceTile(tile);
         }
     }
 }

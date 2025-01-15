@@ -31,12 +31,35 @@ namespace GameObjects.GameLogic
                 }
             }
         }
+        public void Subtract(GameResource resource)
+        {
+            if (resource != null)
+            {
+                var type = resource.GetType();
+                var addingRes = _resources.Where(r => r.GetType() == type).SingleOrDefault();
+                if (addingRes == null)
+                {
+                    _resources.Add(resource);
+                }
+                else
+                {
+                    _resources[_resources.IndexOf(addingRes)] = addingRes - resource;
+                }
+            }
+        }
         public int Get(Tile type)
         {
             var res = _resources.SingleOrDefault(r=>r.Type== type);
             if (res == null)
                 return 0;
             return res.Quantity;
+        }
+        public GameResource GetResource(Tile type)
+        {
+            var res = _resources.SingleOrDefault(r => r.Type == type);
+            if (res == null)
+                return ResourceFactory.CreateResource(type,0);
+            return res;
         }
         public GameResource GetMostPerspective()
         {

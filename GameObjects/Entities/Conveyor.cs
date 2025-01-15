@@ -13,7 +13,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GameObjects.Entities
 {
-    public class Conveyor : Entity, IRotatable
+    public class Conveyor : Entity, IRotatable, IPassable
     {
         private int _angle = 0;
         private int _nextState = 0;
@@ -35,23 +35,23 @@ namespace GameObjects.Entities
                 res.Mesh.MoveTo(Position.X - vec.X + vec.X * res.Progress / 50f, 0.55f, Position.Y - vec.Y + vec.Y * res.Progress / 50f);
             }
         }
-        public Entity? NextEntity;
-        public Conveyor(Vector2 position,TextureHolder textureHolder) :base(position,new Vector2(1,0.5f),500,textureHolder)
+        public List<Entity> NextEntities {  get; private set; }
+        public Conveyor(Vector2 position,TextureHolder textureHolder,int rot) :base(position,new Vector2(1,0.5f),500,textureHolder)
         {
+            SetAngle(rot);
+            NextEntities = new List<Entity>();
             Type=EntityType.Conveyor;
-            Resources.Add(new ResourceTile(new Copper(1), new Vector4(position.X,0,position.Y,1)));
             //foreach (var res in Resources)
             //    res.Mesh.YawBy((float)Math.PI);
         }
-        private void Pass(ResourceTile resource,int progress)
+        public void Pass(ResourceTile resource,int progress)
         {
-            if(NextEntity!=null && NextEntity is Conveyor conv)
+            if(NextEntities.Count>0 && NextEntities[0] is Conveyor conv)
             {
                 conv.Resources.Add(resource);
                 Resources.Remove(resource);
                 resource.Progress = progress;
             }
-            else if(NextEntity!=null){ }
         }
         public void SetAngle(int angle)
         {
@@ -77,7 +77,7 @@ namespace GameObjects.Entities
             foreach (var res in Resources)
                 res.Mesh.YawBy(angleaspect);
         }
-        public void BindConveyors(Entity[,] entities)
+        public void BindNextEntities(Entity[,] entities)
         {
             SetNext(entities);
             
@@ -97,7 +97,7 @@ namespace GameObjects.Entities
             if ((int)Position.X < entities.GetLength(1) - 1)
                 orthogonalConvs.Add(entities[(int)Position.Y, (int)Position.X + 1]);
 
-            foreach (var conv in orthogonalConvs.OfType<Conveyor>())
+            foreach (var conv in orthogonalConvs.OfType<IPassable>())
                 conv.SetNext(entities);
 
         }
@@ -110,7 +110,8 @@ namespace GameObjects.Entities
                 (int)Position.X + (int)vec.X >=0)
             if (entities[(int)Position.Y + (int)vec.Y, (int)Position.X + (int)vec.X] is Conveyor con)
             {
-                NextEntity = con;
+                NextEntities.Clear();
+                NextEntities.Add(con);
                 Vector2 vec2 = con.GetDirection();
                 _nextState = 50;
                 if (vec2 == vec)

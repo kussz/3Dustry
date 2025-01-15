@@ -26,9 +26,9 @@ namespace GameObjects.Entities
         public GameResource LogicResource { get; set; }
         public MeshObject Mesh {  get; set; }
         public ShaderResourceView Texture { get; set; }
-        public ResourceTile(GameResource resource,Vector4 position)
+        public ResourceTile(GameResource resource)
         {
-            Mesh = _loader.MakeTileSquare(new Vector4(position.X-0.5f,position.Y,position.Z-0.5f,1));
+            Mesh = _loader.MakeTileSquare(new Vector4(-0.5f,0,-0.5f,1));
             Texture = TextureStorage.GetTexture(resource.Type);
             LogicResource = resource;
         }

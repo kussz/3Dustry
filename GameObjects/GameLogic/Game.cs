@@ -31,7 +31,7 @@ namespace GameObjects.GameLogic
         Entity? _entity;
         Entity? _closestEntity;
         List<Entity> _entities;
-        Entity[,]? _entityMap;
+        Entity?[,] _entityMap;
         Tile[][,]? _fullMap;
         bool[,]? _collideMap;
         private DirectX3DGraphics _directX3DGraphics;
@@ -274,14 +274,17 @@ namespace GameObjects.GameLogic
         }
         private void Build(Entity entity)
         {
-            entity.Build(GetPerspectiveResource(entity));
+            int rot = 0;
+            if(entity is IRotatable ro)
+                rot=ro.GetAngle();
+            entity = EntityFactory.CreateEntity(entity, GetPerspectiveResource(entity),rot);
+            entity.Build();
             ChangeCollisionMap(entity,false);
-            _entityMap![(int)entity.Position.Y, (int)entity.Position.X] = entity;
+            //_entityMap![(int)entity.Position.Y, (int)entity.Position.X] = entity;
             _entities.Add(entity);
-            if(entity is Conveyor conveyor)
+            if(entity is IPassable conveyor)
             {
-                Vector2 vec = conveyor.GetDirection();
-                conveyor.BindConveyors(_entityMap);
+                conveyor.BindNextEntities(_entityMap);
             }
             //_entity = new Core(_loader, new Vector2(0, 0));
             _entity = EntityFactory.CreateEntity(_inputHandler.HotbarSelection,new Copper(0));
@@ -296,7 +299,7 @@ namespace GameObjects.GameLogic
         {
             if (entity!=null)
             {
-                _entityMap[(int)entity.Position.Y, (int)entity.Position.X] = null;
+                //_entityMap[(int)entity.Position.Y, (int)entity.Position.X] = null;
                 _entities.Remove(entity);
                 ChangeCollisionMap(entity, true);
                 entity.Dispose();
@@ -306,7 +309,13 @@ namespace GameObjects.GameLogic
         {
             for (int i = (int)entity.Position.Y - (int)entity.Size.X / 2; i < (int)entity.Position.Y + entity.Size[0] / 2; i++)
                 for (int j = (int)entity.Position.X - (int)entity.Size.X / 2; j < (int)entity.Position.X + entity.Size[0] / 2; j++)
+                {
                     _collideMap![i, j] = value;
+                    if (!value)
+                        _entityMap[i, j] = entity;
+                    else
+                        _entityMap[i, j] = null;
+                }
         }
         private bool IsInsideBounds(Entity entity)
         {
