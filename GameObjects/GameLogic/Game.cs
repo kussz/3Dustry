@@ -122,7 +122,7 @@ namespace GameObjects.GameLogic
                 return;
             }
             _timeHelper.Update();
-            //AlignCursorToCenter();
+            AlignCursorToCenter();
             ProceedInputs();
 
             //_renderForm.Text = "FPS: " + _timeHelper.FPS.ToString();
@@ -212,6 +212,7 @@ namespace GameObjects.GameLogic
         private void Render(Matrix viewMatrix, Matrix projectionMatrix)
         {
             _renderer.BeginRender();
+            _renderer.SetCameraPosition(_camera.Position);
             _renderer.SetTransparent(-1);
             _renderer.SetSelected(false);
             _renderer.RenderCompound(_groundCompound,viewMatrix,projectionMatrix);
@@ -232,10 +233,12 @@ namespace GameObjects.GameLogic
             {
                 _renderer.RenderConveyorTiles(conveyor, viewMatrix, projectionMatrix);
             }
+            _renderer.SetMain(true);
             if (IsBuildable(_building))
             {
                 _renderer.RenderEntity(_building, viewMatrix, projectionMatrix,false);
             }
+            _renderer.SetMain(false);
             _renderer.SetSelected(false);
             float aspect = (float)_renderForm.ClientSize.Width / _renderForm.ClientSize.Height;
             _renderer.RenderMenuItem(_menu.Hotbar,aspect);

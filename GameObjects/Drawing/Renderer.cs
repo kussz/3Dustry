@@ -13,6 +13,7 @@ using Buffer11 = SharpDX.Direct3D11.Buffer;
 using Device11 = SharpDX.Direct3D11.Device;
 using SharpDX.Windows;
 using GameObjects.Entities;
+using SharpDX.DirectWrite;
 
 namespace GameObjects.Drawing
 {
@@ -24,6 +25,7 @@ namespace GameObjects.Drawing
         {
             public Vector4 position;
             public Vector2 texCoord;
+            public Vector3 normal;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -32,6 +34,8 @@ namespace GameObjects.Drawing
             public Matrix worldMatrix;
             public Matrix worldViewProjectionMatrix;
             public float isTransparent;
+            public Vector3 campos;
+            public int mainBuilding;
             public int isSelected;
             public int buildify;
             public float _padding;
@@ -71,7 +75,8 @@ namespace GameObjects.Drawing
                 new InputElement("POSITION", 0, Format.R32G32B32A32_Float,
                     0, 0),
                 new InputElement("TEXCOORD", 0, Format.R32G32_Float,
-                    16, 0)
+                    16, 0),
+                new InputElement("NORMAL",0,Format.R32G32B32_Float,24,0)
             };
 
             _shaderSignature = ShaderSignature.GetInputSignature(vertexShaderByteCode);
@@ -98,10 +103,17 @@ namespace GameObjects.Drawing
                 ResourceOptionFlags.None,
                 0);
         }
-
+        public void SetMain(bool isMain)
+        {
+            _perObjectConstantBuffer.mainBuilding = Convert.ToInt32(isMain);
+        }
         public void SetTransparent(float isTransparent)
         {
             _perObjectConstantBuffer.isTransparent = isTransparent;
+        }
+        public void SetCameraPosition(Vector4 camerapos)
+        {
+            _perObjectConstantBuffer.campos = new Vector3(camerapos.X, camerapos.Y, camerapos.Z);
         }
         public void SetBuilding(bool isBuilding)
         {
@@ -127,6 +139,8 @@ namespace GameObjects.Drawing
             Matrix projection)
         {
             _perObjectConstantBuffer.worldMatrix = world;
+            _perObjectConstantBuffer.worldMatrix.Transpose();
+
             _perObjectConstantBuffer.worldViewProjectionMatrix =
                 Matrix.Multiply(Matrix.Multiply(world, view), projection);
             _perObjectConstantBuffer.worldViewProjectionMatrix.Transpose();

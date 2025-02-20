@@ -1,5 +1,6 @@
 ﻿using GameObjects.Drawing;
 using GameObjects.GameLogic;
+using GameObjects.Interfaces;
 using SharpDX;
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,7 @@ namespace GameObjects.Entities
             TextureHolder = textureHolder;
         }
         public float BuildProgress { get { return (float)_buildProgress / Cost.GetItemsCount() * Size.Y; } }
-        public float _buildProgress=-1;
+        public float _buildProgress=0;
         private bool _activated = false;
         public Vector2 Size { get; set; }
         public bool IsBuilt { get; private set; }
@@ -37,7 +38,32 @@ namespace GameObjects.Entities
             IsBuilt = true;
             //_buildProgress = Int32.MaxValue;
         }
-        public void Produce(float deltaT)
+        internal void SetNext(Building[,] entities)
+        {
+            List<Building> list = new List<Building>();
+            for (int i = (int)Position.Y - (int)Size.X / 2; i < (int)Position.Y + Size.X / 2; i++)
+            {
+                //Size.X / 2 % 1
+                Building e1 = entities[i, (int)(Position.X - Size.X / 2 - 1)];
+                Building e2 = entities[i, (int)(Position.X + Size.X / 2)];
+                if (!list.Contains(e1))
+                    list.Add(e1);
+                if (!list.Contains(e2))
+                    list.Add(e2);
+            }
+            for (int i = (int)Position.X - (int)Size.X / 2; i < (int)Position.X + Size.X / 2; i++)
+            {
+                Building e1 = entities[(int)(Position.Y - Size.X / 2 - 1), i];
+                Building e2 = entities[(int)(Position.Y + Size.X / 2), i];
+                if (!list.Contains(e1))
+                    list.Add(e1);
+                if (!list.Contains(e2))
+                    list.Add(e2);
+            }
+            if (this is IPassable passable)
+                passable.NextEntities = list.Where(e => e != null).ToList();
+        }
+        public async void Produce(float deltaT)
         {
             if(_activated)
             {

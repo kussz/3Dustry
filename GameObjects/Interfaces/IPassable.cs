@@ -10,9 +10,8 @@ namespace GameObjects.Interfaces
 {
     public interface IPassable
     {
-        public List<Entity> NextEntities {  get; }
+        public List<Building> NextEntities { get; set; }
         public void Pass(ResourceTile resource, int progress);
-        public void SetNext(Entity[,] entities);
-        public void BindNextEntities(Entity[,] entities);
+        public void BindNextEntities(Building[,] entities);
     }
 }

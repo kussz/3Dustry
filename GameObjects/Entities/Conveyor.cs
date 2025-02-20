@@ -36,12 +36,12 @@ namespace GameObjects.Entities
                 res.Mesh.MoveTo(Position.X - vec.X + vec.X * res.Progress / 50f, 0.55f, Position.Y - vec.Y + vec.Y * res.Progress / 50f);
             }
         }
-        public List<Entity> NextEntities {  get; private set; }
+        public List<Building> NextEntities {  get; set; }
         public Conveyor(Vector2 position,TextureHolder textureHolder,int rot) :base(position,new Vector2(1,0.5f),500,textureHolder)
         {
             Cost = new Inventory(new Copper(2));
             SetAngle(rot);
-            NextEntities = new List<Entity>();
+            NextEntities = new List<Building>();
             Type=EntityType.Conveyor;
             //foreach (var res in Resources)
             //    res.Mesh.YawBy((float)Math.PI);
@@ -79,7 +79,7 @@ namespace GameObjects.Entities
             foreach (var res in Resources)
                 res.Mesh.YawBy(angleaspect);
         }
-        public void BindNextEntities(Entity[,] entities)
+        public void BindNextEntities(Building[,] entities)
         {
             SetNext(entities);
             
@@ -99,11 +99,11 @@ namespace GameObjects.Entities
             if ((int)Position.X < entities.GetLength(1) - 1)
                 orthogonalConvs.Add(entities[(int)Position.Y, (int)Position.X + 1]);
 
-            foreach (var conv in orthogonalConvs.OfType<IPassable>())
+            foreach (var conv in orthogonalConvs.OfType<Building>())
                 conv.SetNext(entities);
 
         }
-        public void SetNext(Entity[,]entities)
+        internal new void SetNext(Building[,]entities)
         {
             Vector2 vec = GetDirection();
             if((int)Position.Y + (int)vec.Y<entities.GetLength(0)&&

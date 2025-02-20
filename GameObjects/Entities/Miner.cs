@@ -12,7 +12,7 @@ namespace GameObjects.Entities
 {
     public class Miner : Building, IPassable
     {
-        public List<Entity> NextEntities {  get; private set; }
+        public List<Building> NextEntities {  get; set; }
         private int _nextEntity = 0;
         private GameResource _resource;
         public Miner(Vector2 position, GameResource resource,TextureHolder textureHolder):base(position,new Vector2(2,3),resource==null?0:resource.Quantity,textureHolder)
@@ -20,7 +20,7 @@ namespace GameObjects.Entities
             Cost = new GameLogic.Inventory(new Copper(40));
             Type=EntityType.Miner;
             _resource = resource;
-            NextEntities = new List<Entity>();
+            NextEntities = new List<Building>();
         }
         protected override void Act()
         {
@@ -35,38 +35,15 @@ namespace GameObjects.Entities
                 Pass(new ResourceTile(Inventory.GetResource(_resource.Type)));
             }
         }
-        public void BindNextEntities(Entity[,] entities)
+        public void BindNextEntities(Building[,] entities)
         {
             SetNext(entities);
-            foreach(var entity in NextEntities.OfType<IPassable>()) 
+            foreach(var entity in NextEntities) 
             {
                 entity.SetNext(entities);
             }
         }
-        public void SetNext(Entity[,] entities)
-        {
-            List<Entity> list = new List<Entity>();
-            for (int i = (int)Position.Y - (int)Size.X / 2; i < (int)Position.Y + Size.X / 2; i++)
-            {
-                //Size.X / 2 % 1
-                Entity e1 = entities[i,(int) (Position.X - Size.X / 2 - 1)];
-                Entity e2 = entities[i,(int) (Position.X + Size.X / 2)];
-                if (!list.Contains(e1))
-                    list.Add(e1);
-                if (!list.Contains(e2))
-                    list.Add(e2);
-            }
-            for (int i = (int)Position.X - (int)Size.X / 2; i < (int)Position.X + Size.X / 2; i++)
-            {
-                Entity e1 = entities[(int)(Position.Y - Size.X / 2 - 1), i];
-                Entity e2 = entities[(int)(Position.Y + Size.X / 2), i];
-                if (!list.Contains(e1))
-                    list.Add(e1);
-                if (!list.Contains(e2))
-                    list.Add(e2);
-            }
-            NextEntities = list.Where(e => e != null).ToList();
-        }
+        
         public void Pass(ResourceTile tile,int progress = 50)
         {
             if (NextEntities[_nextEntity] is Conveyor con)
