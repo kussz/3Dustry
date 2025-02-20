@@ -15,6 +15,16 @@ namespace GameObjects.GameLogic
         {
             _resources = new List<GameResource>();
         }
+        public Inventory(params GameResource[] resources)
+        {
+            _resources = new List<GameResource>();
+            foreach (var resource in resources)
+                _resources.Add(resource);
+        }
+        public int GetItemsCount()
+        {
+            return _resources.Sum(o=>o.Quantity);
+        }
         public void Add(GameResource resource)
         {
             if (resource != null)

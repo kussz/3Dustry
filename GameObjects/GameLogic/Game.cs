@@ -28,10 +28,10 @@ namespace GameObjects.GameLogic
         private Camera _camera;
 
         private Loader _loader;
-        Entity? _entity;
-        Entity? _closestEntity;
-        List<Entity> _entities;
-        Entity?[,] _entityMap;
+        Building? _building;
+        Building? _closestBuilding;
+        List<Building> _buildings;
+        Building?[,] _buildingMap;
         Tile[][,]? _fullMap;
         bool[,]? _collideMap;
         private DirectX3DGraphics _directX3DGraphics;
@@ -62,7 +62,7 @@ namespace GameObjects.GameLogic
             _menu = new Menu();
             // Вспомогательные компоненты
             _inputHandler = new InputHandler();
-            _entities = new List<Entity>();
+            _buildings = new List<Building>();
 
             // Создание базовой камеры
             _camera = new Camera(new Vector4(0, 5.0f, 0, 1.0f));
@@ -83,12 +83,12 @@ namespace GameObjects.GameLogic
             // Загрузка карты и других данных
             _fullMap = mapLoader.LoadMap("map2");
             _collideMap = mapLoader.GetCollideMap(_fullMap[0]);
-            _entityMap = new Entity[_fullMap[0].GetLength(0), _fullMap[0].GetLength(1)];
+            _buildingMap = new Building[_fullMap[0].GetLength(0), _fullMap[0].GetLength(1)];
             _groundCompound = mapLoader.GetCompoundMap(_fullMap[0], 0);
             _oreCompound = mapLoader.GetCompoundMap(_fullMap[1], 0f);
             //TextureStorage.SetTextureHolder(EntityType.Miner, new TextureHolder(_directX3DGraphics.Device, "Assets\\Entities\\Miner\\"));
             // Создаем начальную сущность
-            _entity = EntityFactory.CreateEntity(1, new Copper(0));
+            _building = EntityFactory.CreateBuilding(1, new Copper(0));
             //_entity = new Core(_loader, new Vector2(0, 0));
             _camera.Position = new Vector4(_fullMap[0].GetLength(0) / 2, 5.0f, _fullMap[0].GetLength(1) / 2, 1.0f);
             _timeHelper.Update();
@@ -122,7 +122,7 @@ namespace GameObjects.GameLogic
                 return;
             }
             _timeHelper.Update();
-            AlignCursorToCenter();
+            //AlignCursorToCenter();
             ProceedInputs();
 
             //_renderForm.Text = "FPS: " + _timeHelper.FPS.ToString();
@@ -132,26 +132,26 @@ namespace GameObjects.GameLogic
             
             
             Vector3 hitPoint = _camera.IntersectRayWithPlane(40f, 0);
-            Vector3 hitPointDiscrete = new Vector3((float)Math.Round(hitPoint.X-_entity.Size.X/2%1)+ _entity.Size.X / 2 % 1, 0, (float)Math.Round(hitPoint.Z - _entity.Size.X / 2 % 1)+ _entity.Size.X / 2 % 1);
-            _entity.Mesh.MoveTo(hitPointDiscrete);
-            _closestEntity = GetClosestEntity();
+            Vector3 hitPointDiscrete = new Vector3((float)Math.Round(hitPoint.X-_building.Size.X/2%1)+ _building.Size.X / 2 % 1, 0, (float)Math.Round(hitPoint.Z - _building.Size.X / 2 % 1)+ _building.Size.X / 2 % 1);
+            _building.Mesh.MoveTo(hitPointDiscrete);
+            _closestBuilding = GetClosestBuilding();
 
             Render(_camera.GetViewMatrix(), _camera.GetProjectionMatrix());
 
 
-            if (_inputHandler.LeftMouseClick && IsBuildable(_entity))
+            if (_inputHandler.LeftMouseClick && IsBuildable(_building))
             {
-                Build(_entity);
+                Build(_building);
             }
             if (_inputHandler.RightMouseClick)
             {
-                Destroy(_closestEntity);
+                Destroy(_closestBuilding);
             }
             
         }
-        private Entity? GetClosestEntity()
+        private Building? GetClosestBuilding()
         {
-            return _entities
+            return _buildings
             .Select(entity => new
             {
                 Entity = entity,
@@ -178,7 +178,7 @@ namespace GameObjects.GameLogic
             if(_inputHandler.SelectionChanged) {
                 _inputHandler.SelectionChanged = false;
                 _menu.SetSelectedCell(_inputHandler.HotbarSelection);
-                _entity = EntityFactory.CreateEntity(_inputHandler.HotbarSelection, new Copper(0));
+                _building = EntityFactory.CreateBuilding(_inputHandler.HotbarSelection, new Copper(0));
             }
             float xstep = 0;
             float ystep = 0;
@@ -202,7 +202,7 @@ namespace GameObjects.GameLogic
             if (_inputHandler.Down)
                 zstep -= step * _timeHelper.DeltaT;
             if(_inputHandler.R)
-                if (_entity is IRotatable conv)
+                if (_building is IRotatable conv)
                     conv.Rotate();
             _camera.MoveBy(ystep * (float)Math.Sin(_camera._yaw), zstep, ystep * (float)Math.Cos(_camera._yaw));
             _camera.MoveBy(xstep * (float)Math.Sin(_camera._yaw - Math.PI / 2), zstep, xstep * (float)Math.Cos(_camera._yaw - Math.PI / 2));
@@ -212,31 +212,30 @@ namespace GameObjects.GameLogic
         private void Render(Matrix viewMatrix, Matrix projectionMatrix)
         {
             _renderer.BeginRender();
-            _renderer.SetTransparent(0);
+            _renderer.SetTransparent(-1);
             _renderer.SetSelected(false);
             _renderer.RenderCompound(_groundCompound,viewMatrix,projectionMatrix);
             _directX3DGraphics.DisableDepthTest();
             _renderer.RenderCompound(_oreCompound,viewMatrix,projectionMatrix);
             _directX3DGraphics.EnableDepthTest();
-            
-            foreach (var entity in _entities)
+            _renderer.SetBuilding(true);
+            foreach (var entity in _buildings)
             {
                 entity.Produce(_timeHelper.DeltaT);
-                _renderer.RenderEntity(entity, viewMatrix, projectionMatrix, entity == _closestEntity);
+                _renderer.RenderEntity(entity, viewMatrix, projectionMatrix, entity == _closestBuilding);
                 
 
             }
-            _renderer.SetTransparent(0);
+            _renderer.SetBuilding(false);
             _renderer.SetSelected(false);
-            foreach (var conveyor in _entities.OfType<Conveyor>())
+            foreach (var conveyor in _buildings.OfType<Conveyor>())
             {
                 _renderer.RenderConveyorTiles(conveyor, viewMatrix, projectionMatrix);
             }
-            if (IsBuildable(_entity))
+            if (IsBuildable(_building))
             {
-                _renderer.RenderEntity(_entity, viewMatrix, projectionMatrix,false);
+                _renderer.RenderEntity(_building, viewMatrix, projectionMatrix,false);
             }
-            _renderer.SetTransparent(0);
             _renderer.SetSelected(false);
             float aspect = (float)_renderForm.ClientSize.Width / _renderForm.ClientSize.Height;
             _renderer.RenderMenuItem(_menu.Hotbar,aspect);
@@ -255,7 +254,7 @@ namespace GameObjects.GameLogic
             _renderer.Dispose();
             _directX3DGraphics.Dispose();
         }
-        private bool IsBuildable(Entity? entity)
+        private bool IsBuildable(Building? entity)
         {
             if(entity!=null)
             {
@@ -272,61 +271,61 @@ namespace GameObjects.GameLogic
             }
             return false;
         }
-        private void Build(Entity entity)
+        private void Build(Building entity)
         {
             int rot = 0;
             if(entity is IRotatable ro)
                 rot=ro.GetAngle();
-            entity = EntityFactory.CreateEntity(entity, GetPerspectiveResource(entity),rot);
-            entity.Build();
+            entity = EntityFactory.CreateBuilding(entity, GetPerspectiveResource(entity),rot);
+            entity.Activate();
             ChangeCollisionMap(entity,false);
             //_entityMap![(int)entity.Position.Y, (int)entity.Position.X] = entity;
-            _entities.Add(entity);
+            _buildings.Add(entity);
             if(entity is IPassable conveyor)
             {
-                conveyor.BindNextEntities(_entityMap);
+                conveyor.BindNextEntities(_buildingMap);
             }
             //_entity = new Core(_loader, new Vector2(0, 0));
-            _entity = EntityFactory.CreateEntity(_inputHandler.HotbarSelection,new Copper(0));
-            if (_entity is IRotatable rot1 && entity is IRotatable rot2)
+            _building = EntityFactory.CreateBuilding(_inputHandler.HotbarSelection,new Copper(0));
+            if (_building is IRotatable rot1 && entity is IRotatable rot2)
             {
                 rot1.SetAngle(rot2.GetAngle());
             }
             
         }
 
-        private void Destroy(Entity? entity)
+        private void Destroy(Building? entity)
         {
             if (entity!=null)
             {
                 //_entityMap[(int)entity.Position.Y, (int)entity.Position.X] = null;
-                _entities.Remove(entity);
+                _buildings.Remove(entity);
                 ChangeCollisionMap(entity, true);
                 entity.Dispose();
             }
         }
-        private void ChangeCollisionMap(Entity entity, bool value)
+        private void ChangeCollisionMap(Building entity, bool value)
         {
             for (int i = (int)entity.Position.Y - (int)entity.Size.X / 2; i < (int)entity.Position.Y + entity.Size[0] / 2; i++)
                 for (int j = (int)entity.Position.X - (int)entity.Size.X / 2; j < (int)entity.Position.X + entity.Size[0] / 2; j++)
                 {
                     _collideMap![i, j] = value;
                     if (!value)
-                        _entityMap[i, j] = entity;
+                        _buildingMap[i, j] = entity;
                     else
-                        _entityMap[i, j] = null;
+                        _buildingMap[i, j] = null;
                 }
         }
-        private bool IsInsideBounds(Entity entity)
+        private bool IsInsideBounds(Building entity)
         {
             if ((int)entity.Mesh.Position.X-(int)entity.Size.X/2 < 0 || (int)entity.Mesh.Position.Z - (int)entity.Size.X/2 < 0)
                 return false;
-            if ((int)entity.Mesh.Position.Z + entity.Size[0]/2 > _entityMap!.GetLength(0) ||
-                (int)entity.Mesh.Position.X + entity.Size[0]/2 > _entityMap.GetLength(1))
+            if ((int)entity.Mesh.Position.Z + entity.Size[0]/2 > _buildingMap!.GetLength(0) ||
+                (int)entity.Mesh.Position.X + entity.Size[0]/2 > _buildingMap.GetLength(1))
                 return false;
             return true;
         }
-        private GameResource GetPerspectiveResource(Entity entity)
+        private GameResource GetPerspectiveResource(Building entity)
         {
             Inventory resources = new Inventory();
             for (int i = (int)entity.Mesh.Position.Z-(int)entity.Size.X/2; i < (int)entity.Mesh.Position.Z + entity.Size[0]/2; i++)

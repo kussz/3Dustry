@@ -1,4 +1,5 @@
 ﻿using GameObjects.Drawing;
+using GameObjects.GameLogic;
 using GameObjects.Interfaces;
 using GameObjects.Resources;
 using SharpDX;
@@ -13,7 +14,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GameObjects.Entities
 {
-    public class Conveyor : Entity, IRotatable, IPassable
+    public class Conveyor : Building, IRotatable, IPassable
     {
         private int _angle = 0;
         private int _nextState = 0;
@@ -38,6 +39,7 @@ namespace GameObjects.Entities
         public List<Entity> NextEntities {  get; private set; }
         public Conveyor(Vector2 position,TextureHolder textureHolder,int rot) :base(position,new Vector2(1,0.5f),500,textureHolder)
         {
+            Cost = new Inventory(new Copper(2));
             SetAngle(rot);
             NextEntities = new List<Entity>();
             Type=EntityType.Conveyor;

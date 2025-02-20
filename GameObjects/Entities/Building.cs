@@ -1,0 +1,174 @@
+﻿using GameObjects.Drawing;
+using GameObjects.GameLogic;
+using SharpDX;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace GameObjects.Entities
+{
+    public abstract class Building : Entity
+    {
+        public Building(Vector2 position, Vector2 size, float speed, TextureHolder textureHolder) : base(position)
+        {
+            Speed = speed;
+            IsBuilt = false;
+            Size = size;
+            Mesh = _loader.MakeCube(new SharpDX.Vector4(Position.X, 0, Position.Y, 1), size, 0, 0, 0);
+            TextureHolder = textureHolder;
+        }
+        public float BuildProgress { get { return (float)_buildProgress / Cost.GetItemsCount() * Size.Y; } }
+        public float _buildProgress=-1;
+        private bool _activated = false;
+        public Vector2 Size { get; set; }
+        public bool IsBuilt { get; private set; }
+        public Inventory Cost { get; protected set; }
+        public EntityType Type { get; set; }
+        public void Activate()
+        {
+            _activated = true;
+            _buildProgress = 0;
+        }
+        public void Build()
+        {
+            Position = new Vector2(Mesh.Position.X, Mesh.Position.Z);
+            IsBuilt = true;
+            //_buildProgress = Int32.MaxValue;
+        }
+        public void Produce(float deltaT)
+        {
+            if(_activated)
+            {
+                if(IsBuilt)
+                {
+                    Cooldown -= deltaT * Speed * 30f;
+                    if (Cooldown <= 0)
+                    {
+                        Cooldown = 100;
+                        Act();
+                    }
+                }
+                else
+                {
+                    _buildProgress += 0.5f;
+                    if(_buildProgress>=Cost.GetItemsCount())
+                    {
+                        Build();
+                    }
+                }
+            }
+        }
+        protected abstract void Act();
+        public Vector3 IntersectWithLook(Camera camera, float distance)
+        {
+            Vector3 lookDirection = new Vector3(
+            (float)(Math.Cos(-camera.Pitch) * Math.Sin(camera.Yaw)),
+            (float)Math.Sin(-camera.Pitch),
+            (float)(Math.Cos(-camera.Pitch) * Math.Cos(camera.Yaw))
+            );
+            lookDirection.Normalize();
+
+            Vector3 intersectionPoint = IntersectRay((Vector3)camera.Position, lookDirection);
+            if (Vector3.Distance((Vector3)camera.Position, intersectionPoint) > distance)
+                return Vector3.Zero;
+            return intersectionPoint;
+        }
+
+        private Vector3 IntersectRay(Vector3 origin, Vector3 direction)
+        {
+
+            // Установите значения для tMin и tMax
+            float tMin = (Position.X - Size.X / 2 - origin.X) / direction.X;
+            float tMax = (Position.X + Size.X / 2 - origin.X) / direction.X;
+
+            // Обмен значениями, если необходимо
+            if (tMin > tMax)
+            {
+                float temp = tMin;
+                tMin = tMax;
+                tMax = temp;
+            }
+
+            // Проверка по оси Y
+            float tyMin = (-origin.Y) / direction.Y;
+            float tyMax = (Size.Y - origin.Y) / direction.Y;
+
+            if (tyMin > tyMax)
+            {
+                float temp = tyMin;
+                tyMin = tyMax;
+                tyMax = temp;
+            }
+
+            // Обновление tMin и tMax
+            if (tMin > tyMax || tyMin > tMax)
+            {
+                return Vector3.Zero; // Нет пересечения
+            }
+
+            if (tyMin > tMin)
+            {
+                tMin = tyMin;
+            }
+
+            if (tyMax < tMax)
+            {
+                tMax = tyMax;
+            }
+
+            // Проверка по оси Z
+            float tzMin = (Position.Y - Size.X / 2 - origin.Z) / direction.Z;
+            float tzMax = (Position.Y + Size.X / 2 - origin.Z) / direction.Z;
+
+            if (tzMin > tzMax)
+            {
+                float temp = tzMin;
+                tzMin = tzMax;
+                tzMax = temp;
+            }
+
+            // Обновление tMin и tMax
+            if (tMin > tzMax || tzMin > tMax)
+            {
+                return Vector3.Zero; // Нет пересечения
+            }
+
+            if (tzMin > tMin)
+            {
+                tMin = tzMin;
+            }
+
+            if (tzMax < tMax)
+            {
+                tMax = tzMax;
+            }
+
+            // Инициализация переменной для хранения точки пересечения
+            Vector3 intersectionPoint;
+            // Если tMin больше нуля, то это точка пересечения
+            if (tMin >= 0)
+            {
+                intersectionPoint = origin + tMin * direction;
+                return intersectionPoint;
+            }
+
+            // Если tMax больше нуля, то это точка пересечения
+            if (tMax >= 0)
+            {
+                intersectionPoint = origin + tMax * direction;
+                return intersectionPoint;
+            }
+
+            return Vector3.Zero; // Нет положительных пересечений
+        }
+        public ResourceTile ConvertResToTile(Tile type)
+        {
+            var tile = Inventory.GetResource(type);
+            tile.Quantity--;
+            return new ResourceTile(tile);
+        }
+
+    }
+}

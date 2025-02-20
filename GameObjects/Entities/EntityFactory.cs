@@ -11,7 +11,7 @@ namespace GameObjects.Entities
 {
     public class EntityFactory
     {
-        public static Entity? CreateEntity(Entity entity,GameResource resource,int rot)
+        public static Building? CreateBuilding(Building entity,GameResource resource,int rot)
         {
             Vector2 pos = new Vector2(entity.Mesh.Position.X, entity.Mesh.Position.Z);
             switch(entity.Type)
@@ -26,7 +26,7 @@ namespace GameObjects.Entities
                     return null;
             }
         }
-        public static Entity? CreateEntity(int number, GameResource resource)
+        public static Building? CreateBuilding(int number, GameResource resource)
         {
             switch (number)
             {

@@ -29,10 +29,12 @@ namespace GameObjects.Drawing
         [StructLayout(LayoutKind.Sequential)]
         public struct PerObjectConstantBuffer
         {
+            public Matrix worldMatrix;
             public Matrix worldViewProjectionMatrix;
-            public int isTransparent;
+            public float isTransparent;
             public int isSelected;
-            public Vector2 _padding;
+            public int buildify;
+            public float _padding;
         }
         public struct ConstantBuffer
         {
@@ -97,9 +99,13 @@ namespace GameObjects.Drawing
                 0);
         }
 
-        public void SetTransparent(int isTransparent)
+        public void SetTransparent(float isTransparent)
         {
             _perObjectConstantBuffer.isTransparent = isTransparent;
+        }
+        public void SetBuilding(bool isBuilding)
+        {
+            _perObjectConstantBuffer.buildify = Convert.ToInt32(isBuilding);
         }
         public void SetSelected(bool isSelected)
         {
@@ -120,6 +126,7 @@ namespace GameObjects.Drawing
         public void UpdatePerObjectConstantBuffers(Matrix world, Matrix view,
             Matrix projection)
         {
+            _perObjectConstantBuffer.worldMatrix = world;
             _perObjectConstantBuffer.worldViewProjectionMatrix =
                 Matrix.Multiply(Matrix.Multiply(world, view), projection);
             _perObjectConstantBuffer.worldViewProjectionMatrix.Transpose();
@@ -162,18 +169,18 @@ namespace GameObjects.Drawing
         public void RenderMenuItem(MenuTile tile,float aspect)
         {
             _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, tile.Mesh.Texture);
-            SetTransparent(0);
+            SetTransparent(-1);
             UpdatePerObjectConstantBuffers(tile.Mesh.GetWorldMatrix(), Matrix.Identity, Matrix.OrthoLH(aspect * 2f, 2f, 0.1f, 100.0f));
             RenderMeshObject(tile.Mesh);
         }
-        public void RenderEntity(Entity entity,Matrix viewMatrix,Matrix projectionMatrix,bool isSelected)
+        public void RenderEntity(Building building,Matrix viewMatrix,Matrix projectionMatrix,bool isSelected)
         {
             SetSelected(isSelected);
-            SetTransparent(Convert.ToInt32(!entity.IsBuilt));
-            _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, entity.TextureHolder.CurrentFrame);
-            UpdatePerObjectConstantBuffers(entity.Mesh.GetWorldMatrix(),
+            SetTransparent(building.BuildProgress);
+            _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, building.TextureHolder.CurrentFrame);
+            UpdatePerObjectConstantBuffers(building.Mesh.GetWorldMatrix(),
                 viewMatrix, projectionMatrix);
-            RenderMeshObject(entity.Mesh);
+            RenderMeshObject(building.Mesh);
         }
         public void RenderCompound(MeshObject[] compound, Matrix viewMatrix, Matrix projectionMatrix)
         {
