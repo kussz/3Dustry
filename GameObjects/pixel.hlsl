@@ -29,7 +29,11 @@ float4 pixelShader(pixelData input) : SV_Target
             float asp = input.transp - input.worldposition.y;
             if(input.transp >-0.5)
                 if(input.transp+0.1<input.worldposition.y)
-                    tex.a = 0.02;
+                {
+                    tex.a = 0.5;
+                    tex.xyz *= 0.5;
+                    
+                }
                 else if (asp+0.1 < 0.1)
                     tex.xyz += float4(1-(asp + 0.1) * 10, 1-(asp + 0.1) * 10, 0, 1);
         }

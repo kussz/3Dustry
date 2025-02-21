@@ -38,7 +38,7 @@ namespace GameObjects.Entities
             IsBuilt = true;
             //_buildProgress = Int32.MaxValue;
         }
-        internal void SetNext(Building[,] entities)
+        internal virtual void SetNext(Building[,] entities)
         {
             List<Building> list = new List<Building>();
             for (int i = (int)Position.Y - (int)Size.X / 2; i < (int)Position.Y + Size.X / 2; i++)
@@ -46,18 +46,18 @@ namespace GameObjects.Entities
                 //Size.X / 2 % 1
                 Building e1 = entities[i, (int)(Position.X - Size.X / 2 - 1)];
                 Building e2 = entities[i, (int)(Position.X + Size.X / 2)];
-                if (!list.Contains(e1))
+                if (!list.Contains(e1)&& (e1 is Conveyor c1?c1.GetDirection().X!=1?true:false:true))
                     list.Add(e1);
-                if (!list.Contains(e2))
+                if (!list.Contains(e2) && (e2 is Conveyor c2 ? c2.GetDirection().X != -1 ? true : false : true))
                     list.Add(e2);
             }
             for (int i = (int)Position.X - (int)Size.X / 2; i < (int)Position.X + Size.X / 2; i++)
             {
                 Building e1 = entities[(int)(Position.Y - Size.X / 2 - 1), i];
                 Building e2 = entities[(int)(Position.Y + Size.X / 2), i];
-                if (!list.Contains(e1))
+                if (!list.Contains(e1) && (e1 is Conveyor c1 ? c1.GetDirection().Y != 1 ? true : false : true))
                     list.Add(e1);
-                if (!list.Contains(e2))
+                if (!list.Contains(e2) && (e2 is Conveyor c2 ? c2.GetDirection().Y != -1 ? true : false : true))
                     list.Add(e2);
             }
             if (this is IPassable passable)

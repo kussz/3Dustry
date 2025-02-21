@@ -103,7 +103,7 @@ namespace GameObjects.Entities
                 conv.SetNext(entities);
 
         }
-        internal new void SetNext(Building[,]entities)
+        internal override void SetNext(Building[,]entities)
         {
             Vector2 vec = GetDirection();
             if((int)Position.Y + (int)vec.Y<entities.GetLength(0)&&
