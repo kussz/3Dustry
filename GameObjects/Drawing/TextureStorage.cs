@@ -72,7 +72,8 @@ namespace GameObjects.Drawing
         {
             {EntityType.Core,"Assets/Entities/Core"},
             {EntityType.Miner,"Assets/Entities/Miner"},
-            {EntityType.Conveyor,"Assets/Entities/Conveyor" }
+            {EntityType.Conveyor,"Assets/Entities/Conveyor" },
+            {EntityType.Furnace,"Assets/Entities/Furnace" },
         };
         public static string GetTexturePath(Tile key)
         { return _tileTexturePaths[key]; }

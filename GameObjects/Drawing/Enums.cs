@@ -19,6 +19,7 @@ namespace GameObjects.Drawing
         None,
         Core,
         Miner,
-        Conveyor
+        Conveyor,
+        Furnace
     }
 }

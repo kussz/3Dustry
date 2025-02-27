@@ -41,6 +41,21 @@
     <None Update="Assets\Entities\Core\core.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Assets\Entities\Furnace\Furnace001.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Entities\Furnace\Furnace002.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Entities\Furnace\Furnace003.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Entities\Furnace\Furnace004.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Entities\Furnace_inactive\Furnace_inactive001.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Assets\Entities\Miner.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

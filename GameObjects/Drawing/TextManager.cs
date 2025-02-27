@@ -40,7 +40,7 @@ namespace GameObjects.Drawing
             position = new Vector2(position.X/100,1-position.Y/100-size);
             (var vertices, var indices, var result) = SetText(text,size);
             var textob =  new TextObject(_graphics, new Vector4(position.X-asp, position.Y, 0, 1), 0, 0, 0, vertices.ToArray(), indices.ToArray(),_letters,position,align,result,size,textpadding);
-            textob.Aligner();
+            textob.Align();
             return textob;
         }
         private (Renderer.VertexDataStruct[] vertices, uint[] indices,string result) SetText(string text,float size)
