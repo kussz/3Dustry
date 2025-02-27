@@ -10,7 +10,7 @@ namespace GameObjects.Drawing
 {
     public static class TextureStorage
     {
-        private static DirectX3DGraphics _graphics;
+        private static DirectX3DGraphics? _graphics;
         public static void Configure(DirectX3DGraphics graphics)
         {
             _graphics=graphics;
@@ -24,6 +24,7 @@ namespace GameObjects.Drawing
         };
         private static Dictionary<EntityType, TextureHolder> _entityTextures = new Dictionary<EntityType, TextureHolder>();
         private static Dictionary<Tile, ShaderResourceView> _tileTextures = new Dictionary<Tile, ShaderResourceView>();
+        private static ShaderResourceView _textTile;
         public static Tile GetTileFromColorString(string key)
         {
             if (_keyValuePairs.TryGetValue(key, out Tile tile))
@@ -38,21 +39,26 @@ namespace GameObjects.Drawing
         //}
         public static TextureHolder? GetTextureHolder(EntityType type)
         {
-            if (_entityTextures.TryGetValue(type, out TextureHolder texture))
+            if (_entityTextures.TryGetValue(type, out TextureHolder? texture))
             {
                 return texture;
             }
-            _entityTextures.Add(type,new TextureHolder(_graphics.Device,GetTexturePath(type)));
+            _entityTextures.Add(type,new TextureHolder(_graphics!.Device,GetTexturePath(type)));
             return _entityTextures[type];
         }
-
+        public static ShaderResourceView GetTextTile()
+        {
+            if (_textTile == null)
+                _textTile = TextureLoader.GetTexture(_graphics,"Assets/Font/GameFont.png");
+            return _textTile;
+        }
         public static ShaderResourceView? GetTexture(Tile type)
         {
-            if (_tileTextures.TryGetValue(type, out ShaderResourceView texture))
+            if (_tileTextures.TryGetValue(type, out ShaderResourceView? texture))
             {
                 return texture;
             }
-            _tileTextures.Add(type, TextureLoader.GetFloorTexture(_graphics,type));
+            _tileTextures.Add(type, TextureLoader.GetFloorTexture(_graphics!,type));
             return _tileTextures[type];
         }
         private static Dictionary<Tile, string> _tileTexturePaths = new Dictionary<Tile, string>

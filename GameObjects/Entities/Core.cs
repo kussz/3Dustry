@@ -16,6 +16,8 @@ namespace GameObjects.Entities
         {
             Type = EntityType.Core;
             Cost = new Inventory(new Copper(100),new Lead(100));
+            Initialize();
+
         }
         override protected void  Act()
         {

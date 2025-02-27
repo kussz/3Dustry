@@ -25,8 +25,8 @@ namespace GameObjects.GameLogic
         private const float MOVE_STEP = 10f;
         private MeshObject[]? _groundCompound;
         private MeshObject[]? _oreCompound;
-        private Camera _camera;
-
+        private Player _player;
+        private TextManager _textManager;
         private Loader _loader;
         Building? _building;
         Building? _closestBuilding;
@@ -38,6 +38,9 @@ namespace GameObjects.GameLogic
         private Renderer _renderer;
         private InputHandler _inputHandler;
         private TimeHelper _timeHelper;
+        private TextObject _copperText;
+        private TextObject _leadText;
+        private TextObject _loadingText;
         private bool _isDataLoaded = false;
         public RenderForm MainForm { get { return _renderForm; } }
 
@@ -49,7 +52,8 @@ namespace GameObjects.GameLogic
             _renderForm.UserResized += RenderFormResizedCallback;
 
             // Инициализация графической системы
-            _directX3DGraphics = new DirectX3DGraphics(_renderForm);
+            DirectX3DGraphics.Load(_renderForm);
+            _directX3DGraphics = DirectX3DGraphics.Instance;
             // Создание рендера
             _renderer = new Renderer(_directX3DGraphics);
             _renderer.CreateConstantBuffer();
@@ -65,8 +69,11 @@ namespace GameObjects.GameLogic
             _buildings = new List<Building>();
 
             // Создание базовой камеры
-            _camera = new Camera(new Vector4(0, 5.0f, 0, 1.0f));
-
+            _player = Player.GetInstance();
+            _textManager = new TextManager(_directX3DGraphics);
+            _copperText = _textManager.LoadText("%copper%:", new Vector2(0, 19), 1,"lt");
+            _leadText = _textManager.LoadText("%lead%:", new Vector2(0, 39), 1,"lt");
+            _loadingText = _textManager.LoadText("загрузка...", new Vector2(0, 0), 1, "cc");
             // Таймер
             _timeHelper = new TimeHelper();
             Cursor.Hide();
@@ -81,7 +88,7 @@ namespace GameObjects.GameLogic
             MapLoader mapLoader = new MapLoader(_directX3DGraphics, _loader);
 
             // Загрузка карты и других данных
-            _fullMap = mapLoader.LoadMap("map2");
+            _fullMap = mapLoader.LoadMap("newmap");
             _collideMap = mapLoader.GetCollideMap(_fullMap[0]);
             _buildingMap = new Building[_fullMap[0].GetLength(0), _fullMap[0].GetLength(1)];
             _groundCompound = mapLoader.GetCompoundMap(_fullMap[0], 0);
@@ -90,8 +97,9 @@ namespace GameObjects.GameLogic
             // Создаем начальную сущность
             _building = EntityFactory.CreateBuilding(1, new Copper(0));
             //_entity = new Core(_loader, new Vector2(0, 0));
-            _camera.Position = new Vector4(_fullMap[0].GetLength(0) / 2, 5.0f, _fullMap[0].GetLength(1) / 2, 1.0f);
+            _player.Position = new Vector4(_fullMap[0].GetLength(0) / 2, 5.0f, _fullMap[0].GetLength(1) / 2, 1.0f);
             _timeHelper.Update();
+            
             _isDataLoaded = true;
             
         }
@@ -99,7 +107,7 @@ namespace GameObjects.GameLogic
         public void RenderFormResizedCallback(object sender, EventArgs args)
         {
             _directX3DGraphics.Resize();
-            _camera.Aspect = _renderForm.ClientSize.Width /
+            _player.Camera.Aspect = _renderForm.ClientSize.Width /
                 (float)_renderForm.ClientSize.Height;
         }
 
@@ -116,27 +124,28 @@ namespace GameObjects.GameLogic
             {
                 
                 _renderForm.Text = "Loading...";
-                _renderer.LoadingRender();
-                
+                _renderer.BeginLoadingRender();
+                _renderer.RenderText(_loadingText, _player.Camera.Aspect);
                 _renderer.EndRender();
                 return;
             }
             _timeHelper.Update();
             AlignCursorToCenter();
             ProceedInputs();
-
+            _textManager.Edit(_copperText,$"%copper%:{_player.Inventory.Get(Tile.Copper)}");
+            _textManager.Edit(_leadText,$"%lead%:{_player.Inventory.Get(Tile.Lead)}");
             //_renderForm.Text = "FPS: " + _timeHelper.FPS.ToString();
             //_renderForm.Text = _timeHelper.DeltaT.ToString();
-            _renderForm.Text = "X: " + _camera.Position.X + " Y: " + _camera.Position.Y + " Z: " + _camera.Position.Z;
+            _renderForm.Text = "X: " + _player.Position.X + " Y: " + _player.Position.Y + " Z: " + _player.Position.Z;
 
             
             
-            Vector3 hitPoint = _camera.IntersectRayWithPlane(40f, 0);
+            Vector3 hitPoint = _player.Camera.IntersectRayWithPlane(40f, 0);
             Vector3 hitPointDiscrete = new Vector3((float)Math.Round(hitPoint.X-_building.Size.X/2%1)+ _building.Size.X / 2 % 1, 0, (float)Math.Round(hitPoint.Z - _building.Size.X / 2 % 1)+ _building.Size.X / 2 % 1);
             _building.Mesh.MoveTo(hitPointDiscrete);
             _closestBuilding = GetClosestBuilding();
 
-            Render(_camera.GetViewMatrix(), _camera.GetProjectionMatrix());
+            Render(_player.Camera.GetViewMatrix(), _player.Camera.GetProjectionMatrix());
 
 
             if (_inputHandler.LeftMouseClick && IsBuildable(_building))
@@ -155,10 +164,10 @@ namespace GameObjects.GameLogic
             .Select(entity => new
             {
                 Entity = entity,
-                IntersectionPoint = entity.IntersectWithLook(_camera, 40)
+                IntersectionPoint = entity.IntersectWithLook(_player.Camera, 40)
             })
             .Where(x => x.IntersectionPoint != Vector3.Zero)
-            .OrderBy(x => Vector3.Distance((Vector3)_camera.Position, x.IntersectionPoint))
+            .OrderBy(x => Vector3.Distance((Vector3)_player.Camera.Position, x.IntersectionPoint))
             .Select(x => x.Entity)
             .FirstOrDefault();
         }
@@ -204,15 +213,15 @@ namespace GameObjects.GameLogic
             if(_inputHandler.R)
                 if (_building is IRotatable conv)
                     conv.Rotate();
-            _camera.MoveBy(ystep * (float)Math.Sin(_camera._yaw), zstep, ystep * (float)Math.Cos(_camera._yaw));
-            _camera.MoveBy(xstep * (float)Math.Sin(_camera._yaw - Math.PI / 2), zstep, xstep * (float)Math.Cos(_camera._yaw - Math.PI / 2));
-            _camera.PitchBy(_inputHandler.MouseY);
-            _camera.YawBy(_inputHandler.MouseX);
+            _player.Camera.MoveBy(ystep * (float)Math.Sin(_player.Camera._yaw), zstep, ystep * (float)Math.Cos(_player.Camera._yaw));
+            _player.Camera.MoveBy(xstep * (float)Math.Sin(_player.Camera._yaw - Math.PI / 2), zstep, xstep * (float)Math.Cos(_player.Camera._yaw - Math.PI / 2));
+            _player.Camera.PitchBy(_inputHandler.MouseY);
+            _player.Camera.YawBy(_inputHandler.MouseX);
         }
         private void Render(Matrix viewMatrix, Matrix projectionMatrix)
         {
             _renderer.BeginRender();
-            _renderer.SetCameraPosition(_camera.Position);
+            _renderer.SetCameraPosition(_player.Camera.Position);
             _renderer.SetTransparent(-1);
             _renderer.SetSelected(false);
             _renderer.RenderCompound(_groundCompound,viewMatrix,projectionMatrix);
@@ -244,6 +253,8 @@ namespace GameObjects.GameLogic
             _renderer.RenderMenuItem(_menu.Hotbar,aspect);
             _renderer.RenderMenuItem(_menu.SelectedCell,aspect);
             _renderer.RenderMenuItem(_menu.CrossHair,aspect);
+            _renderer.RenderText(_copperText, aspect);
+            _renderer.RenderText(_leadText, aspect);
             _renderer.EndRender();
         }
         public void Run()
@@ -276,23 +287,27 @@ namespace GameObjects.GameLogic
         }
         private void Build(Building entity)
         {
-            int rot = 0;
-            if(entity is IRotatable ro)
-                rot=ro.GetAngle();
-            entity = EntityFactory.CreateBuilding(entity, GetPerspectiveResource(entity),rot);
-            entity.Activate();
-            ChangeCollisionMap(entity,false);
-            //_entityMap![(int)entity.Position.Y, (int)entity.Position.X] = entity;
-            _buildings.Add(entity);
-            if(entity is IPassable conveyor)
+            if (_player.Inventory >= entity.Cost)
             {
-                conveyor.BindNextEntities(_buildingMap);
-            }
-            //_entity = new Core(_loader, new Vector2(0, 0));
-            _building = EntityFactory.CreateBuilding(_inputHandler.HotbarSelection,new Copper(0));
-            if (_building is IRotatable rot1 && entity is IRotatable rot2)
-            {
-                rot1.SetAngle(rot2.GetAngle());
+                _player.Inventory -= entity.Cost;
+                int rot = 0;
+                if (entity is IRotatable ro)
+                    rot = ro.GetAngle();
+                entity = EntityFactory.CreateBuilding(entity, GetPerspectiveResource(entity), rot);
+                entity.Activate();
+                ChangeCollisionMap(entity, false);
+                //_entityMap![(int)entity.Position.Y, (int)entity.Position.X] = entity;
+                _buildings.Add(entity);
+                if (entity is IPassable conveyor)
+                {
+                    conveyor.BindNextEntities(_buildingMap);
+                }
+                //_entity = new Core(_loader, new Vector2(0, 0));
+                _building = EntityFactory.CreateBuilding(_inputHandler.HotbarSelection, new Copper(0));
+                if (_building is IRotatable rot1 && entity is IRotatable rot2)
+                {
+                    rot1.SetAngle(rot2.GetAngle());
+                }
             }
             
         }
@@ -301,6 +316,7 @@ namespace GameObjects.GameLogic
         {
             if (entity!=null)
             {
+                _player.Inventory+=entity.Cost;
                 //_entityMap[(int)entity.Position.Y, (int)entity.Position.X] = null;
                 _buildings.Remove(entity);
                 ChangeCollisionMap(entity, true);

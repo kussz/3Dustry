@@ -17,14 +17,16 @@ namespace GameObjects.Entities
         private GameResource _resource;
         public Miner(Vector2 position, GameResource resource,TextureHolder textureHolder):base(position,new Vector2(2,3),resource==null?0:resource.Quantity,textureHolder)
         {
-            Cost = new GameLogic.Inventory(new Copper(40));
+            Cost = new GameLogic.Inventory(new Copper(20));
             Type=EntityType.Miner;
             _resource = resource;
             NextEntities = new List<Building>();
+            Initialize();
         }
         protected override void Act()
         {
             Inventory.Add(ResourceFactory.CreateResource(_resource.Type,1));
+            Player.GetInstance().Inventory.Add(ResourceFactory.CreateResource(_resource.Type, 1));
             if(NextEntities.Count > 0)
             {
                 if (_nextEntity >= NextEntities.Count)

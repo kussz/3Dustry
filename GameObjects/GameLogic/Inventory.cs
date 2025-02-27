@@ -1,10 +1,5 @@
 ﻿using GameObjects.Drawing;
 using GameObjects.Resources;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GameObjects.GameLogic
 {
@@ -23,7 +18,7 @@ namespace GameObjects.GameLogic
         }
         public int GetItemsCount()
         {
-            return _resources.Sum(o=>o.Quantity);
+            return _resources.Sum(o => o.Quantity);
         }
         public void Add(GameResource resource)
         {
@@ -40,6 +35,46 @@ namespace GameObjects.GameLogic
                     _resources[_resources.IndexOf(addingRes)] = addingRes + resource;
                 }
             }
+        }
+        public static bool operator >=(Inventory a, Inventory b)
+        {
+            foreach (var resource in b._resources)
+            {
+                var type = resource.Type;
+                if (a.Get(type) < b.Get(type))
+                    return false;
+            }
+            return true;
+        }
+        public static bool operator <=(Inventory a, Inventory b)
+        {
+            return b >= a;
+        }
+        public static Inventory operator - (Inventory a, Inventory b)
+        {
+            Inventory newinv = new Inventory();
+            foreach(var resource in a._resources)
+            {
+                newinv.Add(resource);
+            }
+            foreach (var resource in b._resources)
+            {
+                newinv.Subtract(resource);
+            }
+            return newinv;
+        }
+        public static Inventory operator +(Inventory a, Inventory b)
+        {
+            Inventory newinv = new Inventory();
+            foreach (var resource in a._resources)
+            {
+                newinv.Add(resource);
+            }
+            foreach (var resource in b._resources)
+            {
+                newinv.Add(resource);
+            }
+            return newinv;
         }
         public void Subtract(GameResource resource)
         {
@@ -59,7 +94,7 @@ namespace GameObjects.GameLogic
         }
         public int Get(Tile type)
         {
-            var res = _resources.SingleOrDefault(r=>r.Type== type);
+            var res = _resources.SingleOrDefault(r => r.Type == type);
             if (res == null)
                 return 0;
             return res.Quantity;
@@ -68,12 +103,12 @@ namespace GameObjects.GameLogic
         {
             var res = _resources.SingleOrDefault(r => r.Type == type);
             if (res == null)
-                return ResourceFactory.CreateResource(type,0);
+                return ResourceFactory.CreateResource(type, 0);
             return res;
         }
         public GameResource GetMostPerspective()
         {
-            var res = _resources.OrderBy(r=>r.Quantity).FirstOrDefault();
+            var res = _resources.OrderBy(r => r.Quantity).FirstOrDefault();
             return res;
         }
     }

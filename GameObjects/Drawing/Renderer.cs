@@ -14,6 +14,7 @@ using Device11 = SharpDX.Direct3D11.Device;
 using SharpDX.Windows;
 using GameObjects.Entities;
 using SharpDX.DirectWrite;
+using SharpDX.Direct2D1.Effects;
 
 namespace GameObjects.Drawing
 {
@@ -124,7 +125,7 @@ namespace GameObjects.Drawing
             int isSel = Convert.ToInt32(isSelected);
             _perObjectConstantBuffer.isSelected = isSel;
         }
-        public void LoadingRender()
+        public void BeginLoadingRender()
         {
             _directX3DGraphics.ClearBuffers(new Color(new Vector3(color, color, color)));
             color -= 0.005f;
@@ -179,7 +180,13 @@ namespace GameObjects.Drawing
             Utilities.Dispose(ref _vertexShader);
         }
 
-
+        public void RenderText(TextObject text,float aspect)
+        {
+            _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, text.Texture);
+            SetTransparent(-1);
+            UpdatePerObjectConstantBuffers(text.GetWorldMatrix(), Matrix.Identity, Matrix.OrthoLH(aspect * 2f, 2f, 0.1f, 100.0f));
+            RenderMeshObject(text);
+        }
         public void RenderMenuItem(MenuTile tile,float aspect)
         {
             _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, tile.Mesh.Texture);
