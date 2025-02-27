@@ -20,12 +20,17 @@ namespace GameObjects.Entities
             Mesh = _loader.MakeCube(new SharpDX.Vector4(Position.X, 0, Position.Y, 1), size, 0, 0, 0);
             TextureHolder = textureHolder;
         }
-        public float BuildProgress { get { return (float)_buildProgress / Cost.GetItemsCount() * Size.Y; } }
+        private float _maxProgress;
+        protected void Initialize()
+        {
+            _maxProgress = 30 * (float)Math.Sqrt(Cost.GetItemsCount());
+        }
+        public float BuildProgress { get { return (float)_buildProgress / _maxProgress * Size.Y; } }
         public float _buildProgress=0;
         private bool _activated = false;
         public Vector2 Size { get; set; }
         public bool IsBuilt { get; private set; }
-        public Inventory Cost { get; protected set; }
+        public Inventory? Cost { get; protected set; }
         public EntityType Type { get; set; }
         public void Activate()
         {
@@ -78,8 +83,8 @@ namespace GameObjects.Entities
                 }
                 else
                 {
-                    _buildProgress += 0.5f;
-                    if(_buildProgress>=Cost.GetItemsCount())
+                    _buildProgress += 50f *deltaT;
+                    if(_buildProgress>=_maxProgress)
                     {
                         Build();
                     }

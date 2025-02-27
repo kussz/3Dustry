@@ -9,7 +9,7 @@ namespace GameObjects.Drawing
 {
     public class DirectX3DGraphics : IDisposable
     {
-        private RenderForm _renderForm;
+        private static RenderForm _renderForm;
         public RenderForm RenderForm { get => _renderForm; }
 
         private SampleDescription _sampleDescription;
@@ -31,16 +31,16 @@ namespace GameObjects.Drawing
 
         private Factory _factory;
 
-        private Texture2D _backBuffer;
-        public Texture2D BackBuffer { get => _backBuffer; }
+        private Texture2D? _backBuffer;
+        public Texture2D? BackBuffer { get => _backBuffer; }
 
-        private RenderTargetView _renderTargetView;
+        private RenderTargetView? _renderTargetView;
 
         private Texture2DDescription _depthStencilBufferDescription;
 
-        private Texture2D _depthStencilBuffer;
+        private Texture2D? _depthStencilBuffer;
 
-        private DepthStencilView _depthStencilView;
+        private DepthStencilView? _depthStencilView;
         private bool _isFullScreen;
         public bool IsFullScreen
         {
@@ -54,10 +54,24 @@ namespace GameObjects.Drawing
                 }
             }
         }
-
-        public DirectX3DGraphics(RenderForm renderForm)
+        public static void Load(RenderForm form)
         {
-            _renderForm = renderForm;
+            _renderForm = form;
+        }
+        private static DirectX3DGraphics _instance;
+        public static DirectX3DGraphics Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new DirectX3DGraphics(_renderForm);
+                return _instance;
+            }
+        }
+        private DirectX3DGraphics(RenderForm renderForm)
+        {
+            if (_renderForm == null)
+                return;
 
             Configuration.EnableObjectTracking = true;
 

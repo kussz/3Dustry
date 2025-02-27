@@ -18,7 +18,16 @@ namespace GameObjects.Drawing
 
         private int _verticesCount;
         private Renderer.VertexDataStruct[] _vertices;
-        public Renderer.VertexDataStruct[] Vertices { get { return _vertices; } }
+        public Renderer.VertexDataStruct[] Vertices { get => _vertices; set { _vertices = value;_vertexBufferObject.Dispose(); _verticesCount = _vertices.Length; _vertexBufferObject = Buffer11.Create(
+                _directX3DGraphics.Device,
+                BindFlags.VertexBuffer,
+                _vertices,
+                Utilities.SizeOf<Renderer.VertexDataStruct>() * _verticesCount);
+                _vertexBufferBinding = new VertexBufferBinding(
+                    _vertexBufferObject,
+                    Utilities.SizeOf<Renderer.VertexDataStruct>(),
+                    0);
+            } }
         private Buffer11 _vertexBufferObject;
         private VertexBufferBinding _vertexBufferBinding;
         public VertexBufferBinding VertexBufferBinding { get => _vertexBufferBinding; }
@@ -26,7 +35,12 @@ namespace GameObjects.Drawing
         private int _indicesCount;
         public int IndicesCount { get => _indicesCount; }
         private uint[] _indices;
-        public uint[] Indices { get => _indices; }
+        public uint[] Indices { get => _indices; set { _indices = value; _indicesCount = _indices.Length;_indicesBufferObject.Dispose(); _indicesBufferObject = Buffer11.Create(
+                _directX3DGraphics.Device,
+                BindFlags.IndexBuffer,
+                _indices,
+                Utilities.SizeOf<uint>() * _indicesCount);
+            } }
         private Buffer11 _indicesBufferObject;
         public Buffer11 IndicesBufferObject { get => _indicesBufferObject; }
 

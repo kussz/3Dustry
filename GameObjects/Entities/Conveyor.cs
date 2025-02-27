@@ -45,6 +45,7 @@ namespace GameObjects.Entities
             Type=EntityType.Conveyor;
             //foreach (var res in Resources)
             //    res.Mesh.YawBy((float)Math.PI);
+            Initialize();
         }
         public void Pass(ResourceTile resource,int progress)
         {

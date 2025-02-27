@@ -18,7 +18,6 @@ namespace GameObjects.GameLogic
 
         private long _previousFPSMeasurementTime;
 
-        private long _previousTicks;
 
         private float _time;
         public float Time { get => _time; }

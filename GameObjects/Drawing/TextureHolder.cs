@@ -9,7 +9,7 @@ namespace GameObjects.Drawing
 {
     public class TextureHolder
     {
-        public ShaderResourceView[] Textures;
+        public ShaderResourceView[]? Textures;
         private float _frame =0;
         private static float _frameGlobal;
         private float _frameLocal;
@@ -47,7 +47,7 @@ namespace GameObjects.Drawing
             if(_frameLocal>_frameGlobal)
                 _frameLocal -= 1000;
             _frame += _frameGlobal - _frameLocal;
-            if(_frame>=Textures.Length)
+            if(_frame>=Textures!.Length)
                 _frame%=Textures.Length;
             _frameLocal = _frameGlobal;
             return Textures[(int)_frame];
