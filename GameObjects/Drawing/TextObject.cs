@@ -17,8 +17,8 @@ namespace GameObjects.Drawing
         
 
 
-        internal delegate void ReAlign();
-        internal ReAlign Aligner {get; set;}
+        internal delegate float ReAlign();
+        private ReAlign _haligner;
         private ReAlign _valigner;
         public TextObject(DirectX3DGraphics directX3DGraphics,
             Vector4 position, float yaw, float pitch, float roll,
@@ -32,14 +32,14 @@ namespace GameObjects.Drawing
             switch (align[0])
             {
                 case 'c':
-                    Aligner = AlignCenter;
+                    _haligner = AlignCenter;
                     break;
                 case 'r':
-                    Aligner = AlignRight;
+                    _haligner = AlignRight;
                     break;
                 case 'l':
                 default:
-                    Aligner = AlignLeft;
+                    _haligner = AlignLeft;
                     break;
             }
             if(align.Length>1)
@@ -58,47 +58,48 @@ namespace GameObjects.Drawing
             }
             else
                 _valigner = AlignVTop;
-            DirectX3DGraphics.Instance.RenderForm.UserResized += Realign;
+            DirectX3DGraphics.Instance.RenderForm.UserResized += AlignEvent;
         }
-        private void Realign(object sender, EventArgs e)
+        public void Align()
         {
-            Aligner();
+            MoveTo(_haligner(), _valigner(), 0); 
         }
-        private void AlignLeft()
+        private void AlignEvent(object sender, EventArgs e)
+        {
+            Align();
+        }
+        private float AlignLeft()
         {
             var formsize = DirectX3DGraphics.Instance.RenderForm.ClientSize;
             var asp = (float)formsize.Width / formsize.Height;
-            MoveTo(_textPos.X - asp, Position.Y, 0);
-            _valigner();
+            return _textPos.X - asp;
         }
-        private void AlignCenter()
+        private float AlignCenter()
         {
             float widthovertwo = Text.Length * Size *_textpadding / 2;
-            MoveTo(_textPos.X-widthovertwo, Position.Y, 0);
-            _valigner();
+            return _textPos.X - widthovertwo;
 
         }
-        private void AlignRight()
+        private float AlignRight()
         {
             float widthovertwo = Text.Length * Size * _textpadding;
             var formsize = DirectX3DGraphics.Instance.RenderForm.ClientSize;
             var asp = (float)formsize.Width / formsize.Height;
-            MoveTo(_textPos.X +asp - widthovertwo, Position.Y, 0);
-            _valigner();
+            return _textPos.X + asp - widthovertwo;
         }
-        private void AlignVCenter()
+        private float AlignVCenter()
         {
             var asp = 1-Size/2;
-            MoveTo(Position.X, _textPos.Y - asp, 0);
+            return _textPos.Y - asp;
         }
-        private void AlignVTop()
+        private float AlignVTop()
         {
-            MoveTo(Position.X,Position.Y, 0);
+            return Position.Y;
         }
-        private void AlignVBottom()
+        private float AlignVBottom()
         {
             var asp = 2 - Size;
-            MoveTo(Position.X, _textPos.Y - asp, 0);
+            return _textPos.Y - asp;
         }
     }
 }

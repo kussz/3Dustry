@@ -22,6 +22,8 @@ namespace GameObjects.Entities
                     return new Miner(pos, resource, TextureStorage.GetTextureHolder(EntityType.Miner));
                 case EntityType.Conveyor:
                     return new Conveyor(pos,TextureStorage.GetTextureHolder(EntityType.Conveyor),rot);
+                case EntityType.Furnace:
+                    return new Furnace(pos, TextureStorage.GetTextureHolder(EntityType.Furnace));
                 default:
                     return null;
             }
@@ -36,6 +38,8 @@ namespace GameObjects.Entities
                     return new Miner(Vector2.Zero, resource, TextureStorage.GetTextureHolder(EntityType.Miner));
                 case 3:
                     return new Conveyor(Vector2.Zero, TextureStorage.GetTextureHolder(EntityType.Conveyor),0);
+                case 4:
+                    return new Furnace(Vector2.Zero, TextureStorage.GetTextureHolder(EntityType.Furnace));
                 default:
                     return null;
             }
