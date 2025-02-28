@@ -10,9 +10,6 @@ namespace GameObjects.Drawing
     public class TextureHolder
     {
         public ShaderResourceView[][]? Textures;
-        private float _frame =0;
-        private static float _frameGlobal;
-        private float _frameLocal;
         public TextureHolder(Device device, string path)
         {
             List<List<ShaderResourceView>> textureBank;// = new List<ShaderResourceView> ();
@@ -40,21 +37,12 @@ namespace GameObjects.Drawing
                 Console.WriteLine($"Произошла ошибка: {ex.Message}");
             }
         }
-        public static void Update(float DeltaT)
+        public ShaderResourceView GetCurrentFrame(TextureMetaData data, float DeltaT)
         {
-            _frameGlobal += DeltaT*10;
-            if (_frameGlobal >= 1000)
-                _frameGlobal %= 1000;
-        }
-        public ShaderResourceView GetCurrentFrame(int state)
-        {
-            if(_frameLocal>_frameGlobal)
-                _frameLocal -= 1000;
-            _frame += _frameGlobal - _frameLocal;
-            if(_frame>=Textures[state]!.Length)
-                _frame%=Textures[state].Length;
-            _frameLocal = _frameGlobal;
-            return Textures[state][(int)_frame];
+            data.Frame += (DeltaT * 10)%1000;
+            data.Frame%=Textures[data.State].Length;
+            //_frameLocal = _frameGlobal;
+            return Textures[data.State][(int)data.Frame];
         }
     }
 }

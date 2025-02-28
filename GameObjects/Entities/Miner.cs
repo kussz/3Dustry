@@ -20,6 +20,7 @@ namespace GameObjects.Entities
             Cost = new GameLogic.Inventory(new CopperOre(20));
             Type=EntityType.Miner;
             _resource = resource;
+            Inventory.MaxItems = 10;
             NextEntities = new List<Building>();
             Initialize();
         }
@@ -33,26 +34,18 @@ namespace GameObjects.Entities
                 {
                     _nextEntity %= NextEntities.Count;
                 }
-                var pos = NextEntities[_nextEntity].Position;
                 Pass(new ResourceTile(Inventory.GetResource(_resource.Type)));
             }
         }
-        public void BindNextEntities(Building[,] entities)
-        {
-            SetNext(entities);
-            foreach(var entity in NextEntities) 
-            {
-                entity.SetNext(entities);
-            }
-        }
         
-        public void Pass(ResourceTile tile,int progress = 50)
+        
+        public void Pass(ResourceTile tile,int progress = 25)
         {
             if (NextEntities[_nextEntity] is Conveyor con)
             {
                 tile.Progress = progress;
                 con.Resources.Add(tile);
-                Inventory.Subtract(ResourceFactory.CreateResource(_resource.Type, 1));
+                Inventory.Subtract(tile.LogicResource);
             }
             _nextEntity++;
 

@@ -203,7 +203,6 @@ namespace GameObjects.GameLogic
             float ystep = 0;
             float zstep = 0;
             float step = MOVE_STEP * (_inputHandler.Shift ? 2 : 1);
-            TextureHolder.Update(_timeHelper.DeltaT);
             if (_inputHandler.Forward)
                 ystep += step * _timeHelper.DeltaT;
             if (_inputHandler.Backward)
@@ -242,7 +241,7 @@ namespace GameObjects.GameLogic
             foreach (var entity in _buildings)
             {
                 entity.Produce(_timeHelper.DeltaT);
-                _renderer.RenderEntity(entity, viewMatrix, projectionMatrix, entity == _closestBuilding);
+                _renderer.RenderEntity(entity, viewMatrix, projectionMatrix, entity == _closestBuilding,_timeHelper.DeltaT);
                 
 
             }
@@ -257,7 +256,7 @@ namespace GameObjects.GameLogic
             _renderer.SetMain(true);
             if (IsBuildable(_building))
             {
-                _renderer.RenderEntity(_building, viewMatrix, projectionMatrix,false);
+                _renderer.RenderEntity(_building, viewMatrix, projectionMatrix,false, _timeHelper.DeltaT);
             }
             _renderer.SetMain(false);
             _renderer.SetSelected(false);
@@ -299,7 +298,7 @@ namespace GameObjects.GameLogic
         }
         private void Build(Building entity)
         {
-            if (_player.Inventory >= entity.Cost)
+            //if (_player.Inventory >= entity.Cost)
             {
                 _player.Inventory -= entity.Cost;
                 int rot = 0;
