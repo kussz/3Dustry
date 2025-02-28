@@ -6,26 +6,32 @@ namespace GameObjects.GameLogic
     public class Inventory
     {
         private List<GameResource> _resources;
+        public int MaxItems { get; set; } = 0;
         public Inventory()
         {
             _resources = new List<GameResource>();
         }
         public Inventory(params GameResource[] resources)
         {
-            _resources = new List<GameResource>();
-            foreach (var resource in resources)
-                _resources.Add(resource);
+            _resources = [.. resources];
         }
         public int GetItemsCount()
         {
             return _resources.Sum(o => o.Quantity);
         }
-        public void Add(GameResource resource)
+        public bool Add(GameResource resource)
         {
             if (resource != null)
             {
-                var type = resource.GetType();
-                var addingRes = _resources.Where(r => r.GetType() == type).SingleOrDefault();
+                var addingRes = GetResource(resource.Type);
+                int checking = resource.Quantity;
+                if(addingRes!=null)
+                    checking += addingRes.Quantity;
+                if (MaxItems>0&&checking > MaxItems)
+                {
+                    return false;
+                }
+
                 if (addingRes == null)
                 {
                     _resources.Add(resource);
@@ -34,7 +40,9 @@ namespace GameObjects.GameLogic
                 {
                     _resources[_resources.IndexOf(addingRes)] = addingRes + resource;
                 }
+                return true;
             }
+            return false;
         }
         public static bool operator >=(Inventory a, Inventory b)
         {
@@ -76,6 +84,10 @@ namespace GameObjects.GameLogic
             }
             return newinv;
         }
+        public GameResource GetFirst()
+        {
+            return _resources.FirstOrDefault();
+        }
         public void Subtract(GameResource resource)
         {
             if (resource != null)
@@ -88,8 +100,18 @@ namespace GameObjects.GameLogic
                 }
                 else
                 {
-                    _resources[_resources.IndexOf(addingRes)] = addingRes - resource;
+                    if((addingRes-resource).Quantity>0)
+                        _resources[_resources.IndexOf(addingRes)] = addingRes - resource;
+                    else
+                        _resources.Remove(addingRes);
                 }
+            }
+        }
+        public void Subtract(Inventory inv)
+        {
+            foreach (var resource in inv._resources)
+            {
+                Subtract(resource);
             }
         }
         public int GetCount(ResourceType type)
@@ -103,7 +125,7 @@ namespace GameObjects.GameLogic
         {
             var res = _resources.SingleOrDefault(r => r.Type == type);
             if (res == null)
-                return ResourceFactory.CreateResource(type, 0);
+                return null;
             return res;
         }
         public GameResource GetMostPerspective()

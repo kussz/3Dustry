@@ -16,16 +16,16 @@ namespace GameObjects.Entities
 {
     public class Conveyor : Building, IRotatable, IPassable
     {
-        private const int PADDING = 30;
+        public const int PADDING = 30;
         private int _angle = 0;
-        private int _nextState = 0;
-        int _maxProgress = 50;
+        private int _nextState = 25;
+        int _maxProgress = 75;
         public List<ResourceTile> Resources { get; set; } = new List<ResourceTile>();
         public bool CanProgress(int i)
         {
             if(i==0)
             {
-                if (NextEntities[0] is Conveyor con && con.Resources.Count > 0)
+                if (NextEntities.Count>0&& NextEntities[0] is Conveyor con && con.Resources.Count > 0)
                 {
                     // Вычисляем значение counting
                     var counting = con.Resources.Last().Progress + 50 - Resources[0].Progress;
@@ -85,6 +85,12 @@ namespace GameObjects.Entities
                 Resources.Remove(resource);
                 resource.Progress = progress;
             }
+            else if (NextEntities.Count > 0 && NextEntities[0] is IAcceptor acceptor)
+            {
+                if(acceptor.Get(resource.LogicResource))
+                Resources.Remove(resource);
+                
+            }
         }
         public void SetAngle(int angle)
         {
@@ -113,7 +119,7 @@ namespace GameObjects.Entities
         public void BindNextEntities(Building[,] entities)
         {
             SetNext(entities);
-            
+
             List<Entity> orthogonalConvs = new List<Entity>();
             if ((int)Position.Y > 0)
                 orthogonalConvs.Add(entities[(int)Position.Y - 1, (int)Position.X]);
@@ -156,6 +162,11 @@ namespace GameObjects.Entities
                 else if (vec2.X != -vec.X && vec2.Y != -vec.Y)
                     _maxProgress = 100;
 
+            }
+            else if(entities[(int)Position.Y + (int)vec.Y, (int)Position.X + (int)vec.X] is IAcceptor acceptor)
+            {
+                _maxProgress = 100;
+                NextEntities.Add(acceptor as Building);
             }
         }
         public Vector2 GetDirection()

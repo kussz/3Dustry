@@ -4,6 +4,7 @@ using GameObjects.Interfaces;
 using SharpDX;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,13 +16,15 @@ namespace GameObjects.Entities
         protected Building[,] _map;
         public Building(Vector2 position, Vector2 size, float speed, TextureHolder textureHolder) : base(position)
         {
+            Metadata = new TextureMetaData();
             Speed = speed;
             IsBuilt = false;
             Size = size;
             Mesh = _loader.MakeCube(new SharpDX.Vector4(Position.X, 0, Position.Y, 1), size, 0, 0, 0);
             TextureHolder = textureHolder;
         }
-        public int State {  get; set; }
+        
+        public TextureMetaData Metadata { get; set; }
         private float _maxProgress;
         protected void Initialize()
         {
@@ -42,6 +45,8 @@ namespace GameObjects.Entities
         }
         public virtual void Build()
         {
+            foreach (var b in GetAligned(_map))
+                b.SetNext(_map);
             Position = new Vector2(Mesh.Position.X, Mesh.Position.Z);
             IsBuilt = true;
             //_buildProgress = Int32.MaxValue;
@@ -107,6 +112,14 @@ namespace GameObjects.Entities
                     if(_buildProgress>=_maxProgress)
                     {
                         Build();
+                    }
+                }
+                if(this is IConvertor convertor && convertor.IsWorking)
+                {
+                    convertor.ConvertionProgress++;
+                    if(convertor.ConvertionProgress>=100)
+                    {
+                        convertor.EndWork();
                     }
                 }
             }

@@ -194,11 +194,11 @@ namespace GameObjects.Drawing
             UpdatePerObjectConstantBuffers(tile.Mesh.GetWorldMatrix(), Matrix.Identity, Matrix.OrthoLH(aspect * 2f, 2f, 0.1f, 100.0f));
             RenderMeshObject(tile.Mesh);
         }
-        public void RenderEntity(Building building,Matrix viewMatrix,Matrix projectionMatrix,bool isSelected)
+        public void RenderEntity(Building building,Matrix viewMatrix,Matrix projectionMatrix,bool isSelected,float DeltaT)
         {
             SetSelected(isSelected);
             SetTransparent(building.BuildProgress);
-            _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, building.TextureHolder.GetCurrentFrame(building.State));
+            _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, building.TextureHolder.GetCurrentFrame(building.Metadata,DeltaT));
             UpdatePerObjectConstantBuffers(building.Mesh.GetWorldMatrix(),
                 viewMatrix, projectionMatrix);
             RenderMeshObject(building.Mesh);

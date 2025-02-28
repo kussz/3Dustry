@@ -11,8 +11,8 @@ namespace GameObjects.Interfaces
 {
     public interface IAcceptor
     {
-        Tile[] Acceptings { get; }
-        void Get(GameResource resource);
-        void Get(Inventory inventory);
+        ResourceType[] Acceptings { get; }
+        bool Get(GameResource resource);
+        bool Get(Inventory inventory);
     }
 }

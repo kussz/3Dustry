@@ -18,6 +18,7 @@ namespace GameObjects.Drawing
             {"#AE7C5B",Tile.Copper },
             {"#8E85A2",Tile.Lead }
         };
+        //private static Dictionary<EntityType, TextureMetaData> _syncMetaDatas
         private static Dictionary<EntityType, TextureHolder> _entityTextures = new Dictionary<EntityType, TextureHolder>();
         private static Dictionary<Tile, ShaderResourceView> _tileTextures = new Dictionary<Tile, ShaderResourceView>();
         private static Dictionary<ResourceType, ShaderResourceView> _resTextures = new Dictionary<ResourceType, ShaderResourceView>();
