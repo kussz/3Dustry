@@ -17,7 +17,7 @@ namespace GameObjects.Entities
         private GameResource _resource;
         public Miner(Vector2 position, GameResource resource,TextureHolder textureHolder):base(position,new Vector2(2,3),resource==null?0:resource.Quantity,textureHolder)
         {
-            Cost = new GameLogic.Inventory(new Copper(20));
+            Cost = new GameLogic.Inventory(new CopperOre(20));
             Type=EntityType.Miner;
             _resource = resource;
             NextEntities = new List<Building>();
@@ -50,6 +50,7 @@ namespace GameObjects.Entities
         {
             if (NextEntities[_nextEntity] is Conveyor con)
             {
+                tile.Progress = progress;
                 con.Resources.Add(tile);
                 Inventory.Subtract(ResourceFactory.CreateResource(_resource.Type, 1));
             }

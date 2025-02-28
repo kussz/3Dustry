@@ -16,10 +16,35 @@ namespace GameObjects.Entities
 {
     public class Conveyor : Building, IRotatable, IPassable
     {
+        private const int PADDING = 30;
         private int _angle = 0;
         private int _nextState = 0;
         int _maxProgress = 50;
-        public List<ResourceTile> Resources = new List<ResourceTile>();
+        public List<ResourceTile> Resources { get; set; } = new List<ResourceTile>();
+        public bool CanProgress(int i)
+        {
+            if(i==0)
+            {
+                if (NextEntities[0] is Conveyor con && con.Resources.Count > 0)
+                {
+                    // Вычисляем значение counting
+                    var counting = con.Resources.Last().Progress + 50 - Resources[0].Progress;
+
+                    // Проверяем условие
+                    if (counting > PADDING)
+                    {
+                        return true;
+                    }
+                    else
+                        return false;
+                }
+                return true;
+            }
+            else
+            {
+                return (Resources[i - 1].Progress - PADDING >= Resources[i].Progress);
+            }
+        }
         protected override void Act()
         {
             if (Resources.Count>0&& Resources[0].Progress >= 100)
@@ -30,16 +55,21 @@ namespace GameObjects.Entities
             for(int i=0;i<Resources.Count; i++)
             {
                 var res = Resources[i];
-                if (res.Progress < _maxProgress&&(i>0?Resources[i-1].Progress-res.Progress<15:true))
+                if (res.Progress < _maxProgress&&CanProgress(i))
                     res.AddProgress(1);
 
                 res.Mesh.MoveTo(Position.X - vec.X + vec.X * res.Progress / 50f, 0.55f, Position.Y - vec.Y + vec.Y * res.Progress / 50f);
             }
         }
+        public override void Build()
+        {
+            base.Build();
+            BindNextEntities(_map);
+        }
         public List<Building> NextEntities {  get; set; }
         public Conveyor(Vector2 position,TextureHolder textureHolder,int rot) :base(position,new Vector2(1,0.5f),500,textureHolder)
         {
-            Cost = new Inventory(new Copper(2));
+            Cost = new Inventory(new CopperOre(2));
             SetAngle(rot);
             NextEntities = new List<Building>();
             Type=EntityType.Conveyor;
@@ -107,6 +137,8 @@ namespace GameObjects.Entities
         internal override void SetNext(Building[,]entities)
         {
             Vector2 vec = GetDirection();
+            NextEntities.Clear();
+            _maxProgress = 50;
             if((int)Position.Y + (int)vec.Y<entities.GetLength(0)&&
                 (int)Position.X + (int)vec.X < entities.GetLength(1)&&
                 (int)Position.Y + (int)vec.Y >=0 &&

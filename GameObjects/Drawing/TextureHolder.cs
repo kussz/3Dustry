@@ -9,27 +9,31 @@ namespace GameObjects.Drawing
 {
     public class TextureHolder
     {
-        public ShaderResourceView[]? Textures;
+        public ShaderResourceView[][]? Textures;
         private float _frame =0;
         private static float _frameGlobal;
         private float _frameLocal;
-        public ShaderResourceView CurrentFrame { get {
-                return GetCurrentFrame();
-            } }
         public TextureHolder(Device device, string path)
         {
-            List<ShaderResourceView> list = new List<ShaderResourceView> ();
+            List<List<ShaderResourceView>> textureBank;// = new List<ShaderResourceView> ();
             try
             {
                 // Получаем все файлы в указанной папке
-                string[] files = Directory.GetFiles(path);
-
-                // Перебираем и выводим имена файлов
-                foreach (string file in files)
+                string[] dirs = Directory.GetDirectories(path);
+                textureBank = new List<List<ShaderResourceView>>();
+                foreach (string dir in dirs)
                 {
-                    list.Add(new ShaderResourceView(device, TextureLoader.LoadTexture(device, file)));
+                    List <ShaderResourceView> list = new List<ShaderResourceView>();
+                    string[] files = Directory.GetFiles(dir);
+                    foreach (string file in files)
+                    {
+                        list.Add(new ShaderResourceView(device, TextureLoader.LoadTexture(device, file)));
+                    }
+                    textureBank.Add(list);
                 }
-                Textures = list.ToArray();
+                Textures = textureBank.Select(list=>list.ToArray()).ToArray();
+
+                
             }
             catch (Exception ex)
             {
@@ -42,15 +46,15 @@ namespace GameObjects.Drawing
             if (_frameGlobal >= 1000)
                 _frameGlobal %= 1000;
         }
-        private ShaderResourceView GetCurrentFrame()
+        public ShaderResourceView GetCurrentFrame(int state)
         {
             if(_frameLocal>_frameGlobal)
                 _frameLocal -= 1000;
             _frame += _frameGlobal - _frameLocal;
-            if(_frame>=Textures!.Length)
-                _frame%=Textures.Length;
+            if(_frame>=Textures[state]!.Length)
+                _frame%=Textures[state].Length;
             _frameLocal = _frameGlobal;
-            return Textures[(int)_frame];
+            return Textures[state][(int)_frame];
         }
     }
 }

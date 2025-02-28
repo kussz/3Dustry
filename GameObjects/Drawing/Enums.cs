@@ -22,4 +22,11 @@ namespace GameObjects.Drawing
         Conveyor,
         Furnace
     }
+    public enum ResourceType
+    {
+        CopperOre,
+        LeadOre,
+        Copper,
+        Lead
+    }
 }

@@ -10,13 +10,13 @@ namespace GameObjects.Resources
 {
     public abstract class GameResource
     {
-        protected GameResource(Tile type,int quantity)
+        protected GameResource(ResourceType type,int quantity)
         {
             Type=type;
             Quantity =quantity;
         }
         public int Quantity { get; set; }
-        public Tile Type { get; set; }
+        public ResourceType Type { get; set; }
         public static GameResource operator +(GameResource a, GameResource b)
         {
             if(a.GetType() != b.GetType())

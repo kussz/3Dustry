@@ -41,7 +41,7 @@ namespace GameObjects.GameLogic
             foreach (var resource in b._resources)
             {
                 var type = resource.Type;
-                if (a.Get(type) < b.Get(type))
+                if (a.GetCount(type) < b.GetCount(type))
                     return false;
             }
             return true;
@@ -92,14 +92,14 @@ namespace GameObjects.GameLogic
                 }
             }
         }
-        public int Get(Tile type)
+        public int GetCount(ResourceType type)
         {
             var res = _resources.SingleOrDefault(r => r.Type == type);
             if (res == null)
                 return 0;
             return res.Quantity;
         }
-        public GameResource GetResource(Tile type)
+        public GameResource GetResource(ResourceType type)
         {
             var res = _resources.SingleOrDefault(r => r.Type == type);
             if (res == null)

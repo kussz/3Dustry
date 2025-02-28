@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace GameObjects.Resources
 {
-    public class Lead : GameResource
+    public class LeadOre : GameResource
     {
-        public Lead(int quantity) : base(Tile.Lead, quantity) { }
+        public LeadOre(int quantity) : base(ResourceType.LeadOre, quantity) { }
     }
 }

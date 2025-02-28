@@ -91,6 +91,11 @@ namespace GameObjects.Drawing
             Texture2D texture = LoadTexture(graphics.Device, TextureStorage.GetTexturePath(type));
             return new ShaderResourceView(graphics.Device, texture);
         }
+        public static ShaderResourceView GetResourceTexture(DirectX3DGraphics graphics, ResourceType type)
+        {
+            Texture2D texture = LoadTexture(graphics.Device, TextureStorage.GetTexturePath(type));
+            return new ShaderResourceView(graphics.Device, texture);
+        }
         public static ShaderResourceView GetTexture(DirectX3DGraphics graphics, string filename)
         {
             Texture2D texture = LoadTexture(graphics.Device, filename);
