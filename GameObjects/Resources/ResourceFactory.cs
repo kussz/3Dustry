@@ -14,8 +14,19 @@ namespace GameObjects.Resources
             switch (resType)
             {
                 case Tile.Copper:
-                    return new Copper(quantity);
-                case Tile.Lead: return new Lead(quantity);
+                    return new CopperOre(quantity);
+                case Tile.Lead: return new LeadOre(quantity);
+                default:
+                    return null;
+            }
+        }
+        public static GameResource CreateResource(ResourceType resType, int quantity)
+        {
+            switch (resType)
+            {
+                case ResourceType.CopperOre:
+                    return new CopperOre(quantity);
+                case ResourceType.LeadOre: return new LeadOre(quantity);
                 default:
                     return null;
             }

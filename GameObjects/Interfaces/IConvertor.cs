@@ -5,11 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameObjects.Resources
+namespace GameObjects.Interfaces
 {
-    public class Copper : GameResource
+    public interface IConvertor
     {
-        public Copper(int quantity) : base(Tile.Copper,quantity)
-        { }
+        Dictionary<Tile[], Tile[]> Convert(Tile[] tiles);
     }
 }

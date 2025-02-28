@@ -10,11 +10,7 @@ namespace GameObjects.Drawing
 {
     public static class TextureStorage
     {
-        private static DirectX3DGraphics? _graphics;
-        public static void Configure(DirectX3DGraphics graphics)
-        {
-            _graphics=graphics;
-        }
+        private static DirectX3DGraphics? _graphics = DirectX3DGraphics.Instance;
         private static Dictionary<string, Tile> _keyValuePairs = new Dictionary<string, Tile>
         {
             {"#D2AE8D",Tile.Sand },
@@ -24,6 +20,7 @@ namespace GameObjects.Drawing
         };
         private static Dictionary<EntityType, TextureHolder> _entityTextures = new Dictionary<EntityType, TextureHolder>();
         private static Dictionary<Tile, ShaderResourceView> _tileTextures = new Dictionary<Tile, ShaderResourceView>();
+        private static Dictionary<ResourceType, ShaderResourceView> _resTextures = new Dictionary<ResourceType, ShaderResourceView>();
         private static ShaderResourceView _textTile;
         public static Tile GetTileFromColorString(string key)
         {
@@ -61,12 +58,26 @@ namespace GameObjects.Drawing
             _tileTextures.Add(type, TextureLoader.GetFloorTexture(_graphics!,type));
             return _tileTextures[type];
         }
+        public static ShaderResourceView? GetTexture(ResourceType type)
+        {
+            if (_resTextures.TryGetValue(type, out ShaderResourceView? texture))
+            {
+                return texture;
+            }
+            _resTextures.Add(type, TextureLoader.GetResourceTexture(_graphics!, type));
+            return _resTextures[type];
+        }
         private static Dictionary<Tile, string> _tileTexturePaths = new Dictionary<Tile, string>
         {
             { Tile.Sand, "Assets/Tiles/sand.png"},
             { Tile.BlackSand, "Assets/Tiles/sand2.png"},
             { Tile.Copper, "Assets/Tiles/Copper.png"},
             { Tile.Lead, "Assets/Tiles/Lead.png"},
+        };
+        private static Dictionary<ResourceType, string> _resTexturePaths = new Dictionary<ResourceType, string>
+        {
+            { ResourceType.CopperOre, "Assets/Resources/CopperOre.png"},
+            { ResourceType.LeadOre, "Assets/Resources/LeadOre.png"},
         };
         private static Dictionary<EntityType, string> _entityTexturePaths = new Dictionary<EntityType, string>
         {
@@ -77,6 +88,8 @@ namespace GameObjects.Drawing
         };
         public static string GetTexturePath(Tile key)
         { return _tileTexturePaths[key]; }
+        public static string GetTexturePath(ResourceType key)
+        { return _resTexturePaths[key]; }
         public static string GetTexturePath(EntityType key)
         { return _entityTexturePaths[key]; }
         public static int Types { get { return _tileTexturePaths.Count; } }

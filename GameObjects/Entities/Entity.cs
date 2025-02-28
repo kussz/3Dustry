@@ -20,7 +20,7 @@ namespace GameObjects.Entities
         public float Cooldown { get; set; } = 100f;
         public float Speed { get; set; }
         public TextureHolder TextureHolder { get; set; }
-        public Inventory Inventory { get; }
+        public Inventory Inventory { get; set; }
         public Entity(Vector2 position)
         {
             Inventory = new Inventory();
@@ -30,7 +30,7 @@ namespace GameObjects.Entities
         
         public MeshObject Mesh { get; set; }
         public Vector2 Position { get; set; }
-        public void Dispose() { Mesh.Dispose(); }
+        public virtual void Dispose() { Mesh.Dispose(); }
         
     }
 }

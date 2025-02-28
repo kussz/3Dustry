@@ -198,7 +198,7 @@ namespace GameObjects.Drawing
         {
             SetSelected(isSelected);
             SetTransparent(building.BuildProgress);
-            _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, building.TextureHolder.CurrentFrame);
+            _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, building.TextureHolder.GetCurrentFrame(building.State));
             UpdatePerObjectConstantBuffers(building.Mesh.GetWorldMatrix(),
                 viewMatrix, projectionMatrix);
             RenderMeshObject(building.Mesh);

@@ -12,6 +12,7 @@ namespace GameObjects.Entities
 {
     public abstract class Building : Entity
     {
+        protected Building[,] _map;
         public Building(Vector2 position, Vector2 size, float speed, TextureHolder textureHolder) : base(position)
         {
             Speed = speed;
@@ -20,6 +21,7 @@ namespace GameObjects.Entities
             Mesh = _loader.MakeCube(new SharpDX.Vector4(Position.X, 0, Position.Y, 1), size, 0, 0, 0);
             TextureHolder = textureHolder;
         }
+        public int State {  get; set; }
         private float _maxProgress;
         protected void Initialize()
         {
@@ -32,18 +34,19 @@ namespace GameObjects.Entities
         public bool IsBuilt { get; private set; }
         public Inventory? Cost { get; protected set; }
         public EntityType Type { get; set; }
-        public void Activate()
+        public void Activate(Building[,] map)
         {
+            _map = map;
             _activated = true;
             _buildProgress = 0;
         }
-        public void Build()
+        public virtual void Build()
         {
             Position = new Vector2(Mesh.Position.X, Mesh.Position.Z);
             IsBuilt = true;
             //_buildProgress = Int32.MaxValue;
         }
-        internal virtual void SetNext(Building[,] entities)
+        private List<Building> GetAligned(Building[,] entities)
         {
             List<Building> list = new List<Building>();
             for (int i = (int)Position.Y - (int)Size.X / 2; i < (int)Position.Y + Size.X / 2; i++)
@@ -51,22 +54,39 @@ namespace GameObjects.Entities
                 //Size.X / 2 % 1
                 Building e1 = entities[i, (int)(Position.X - Size.X / 2 - 1)];
                 Building e2 = entities[i, (int)(Position.X + Size.X / 2)];
-                if (!list.Contains(e1)&& (e1 is Conveyor c1?c1.GetDirection().X!=1?true:false:true))
+                if (!list.Contains(e1))
                     list.Add(e1);
-                if (!list.Contains(e2) && (e2 is Conveyor c2 ? c2.GetDirection().X != -1 ? true : false : true))
+                if (!list.Contains(e2))
                     list.Add(e2);
             }
             for (int i = (int)Position.X - (int)Size.X / 2; i < (int)Position.X + Size.X / 2; i++)
             {
                 Building e1 = entities[(int)(Position.Y - Size.X / 2 - 1), i];
                 Building e2 = entities[(int)(Position.Y + Size.X / 2), i];
-                if (!list.Contains(e1) && (e1 is Conveyor c1 ? c1.GetDirection().Y != 1 ? true : false : true))
+                if (!list.Contains(e1))
                     list.Add(e1);
-                if (!list.Contains(e2) && (e2 is Conveyor c2 ? c2.GetDirection().Y != -1 ? true : false : true))
+                if (!list.Contains(e2))
                     list.Add(e2);
             }
+            return list.Where(b=>b!=null).ToList();
+        }
+        internal virtual void SetNext(Building[,] entities)
+        {
+            var list = GetAligned(entities);
+            var newlist = new List<Building>();
+            foreach(var b in list)
+            {
+                if(b is Conveyor con)
+                {
+                    if ((con.GetDirection().X == Math.Sign(Position.X - con.Position.X)&& Math.Abs(Position.X - con.Position.X)>Size.X/2) ||
+                        (con.GetDirection().Y == Math.Sign(Position.Y - con.Position.Y) && Math.Abs(Position.Y - con.Position.Y) > Size.X / 2))
+                        continue;
+                   
+                }
+                newlist.Add(b);
+            }
             if (this is IPassable passable)
-                passable.NextEntities = list.Where(e => e != null).ToList();
+                passable.NextEntities = newlist.Where(e => e != null).ToList();
         }
         public async void Produce(float deltaT)
         {
@@ -194,11 +214,12 @@ namespace GameObjects.Entities
 
             return Vector3.Zero; // Нет положительных пересечений
         }
-        public ResourceTile ConvertResToTile(Tile type)
+
+        public override void Dispose()
         {
-            var tile = Inventory.GetResource(type);
-            tile.Quantity--;
-            return new ResourceTile(tile);
+            foreach (var b in GetAligned(_map))
+                b.SetNext(_map);
+            base.Dispose();
         }
 
     }

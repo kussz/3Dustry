@@ -21,6 +21,8 @@ namespace GameObjects.GameLogic
 {
     public class Game : IDisposable
     {
+        private const float TICK_RATE = 1;
+        private float _tickTime = 0;
         private RenderForm _renderForm;
         private const float MOVE_STEP = 10f;
         private MeshObject[]? _groundCompound;
@@ -57,11 +59,10 @@ namespace GameObjects.GameLogic
             // Создание рендера
             _renderer = new Renderer(_directX3DGraphics);
             _renderer.CreateConstantBuffer();
-            _loader = new Loader(_directX3DGraphics);
+            _loader = new Loader();
             //_menu = _loader.MakeTileSquare(new Vector4(0, 0, 0, 1));
             MenuTile.Configure(_loader, _directX3DGraphics.Device);
             ResourceTile.Configure(_loader);
-            TextureStorage.Configure(_directX3DGraphics);
             Entity.Configure(_loader);
             _menu = new Menu();
             // Вспомогательные компоненты
@@ -95,7 +96,7 @@ namespace GameObjects.GameLogic
             _oreCompound = mapLoader.GetCompoundMap(_fullMap[1], 0f);
             //TextureStorage.SetTextureHolder(EntityType.Miner, new TextureHolder(_directX3DGraphics.Device, "Assets\\Entities\\Miner\\"));
             // Создаем начальную сущность
-            _building = EntityFactory.CreateBuilding(1, new Copper(0));
+            _building = EntityFactory.CreateBuilding(1, new CopperOre(0));
             //_entity = new Core(_loader, new Vector2(0, 0));
             _player.Position = new Vector4(_fullMap[0].GetLength(0) / 2, 5.0f, _fullMap[0].GetLength(1) / 2, 1.0f);
             _timeHelper.Update();
@@ -130,10 +131,9 @@ namespace GameObjects.GameLogic
                 return;
             }
             _timeHelper.Update();
-            AlignCursorToCenter();
+            //AlignCursorToCenter();
             ProceedInputs();
-            _textManager.Edit(_copperText,$"%copper%:{_player.Inventory.Get(Tile.Copper)}");
-            _textManager.Edit(_leadText,$"%lead%:{_player.Inventory.Get(Tile.Lead)}");
+            Tick();
             //_renderForm.Text = "FPS: " + _timeHelper.FPS.ToString();
             //_renderForm.Text = _timeHelper.DeltaT.ToString();
             _renderForm.Text = "X: " + _player.Position.X + " Y: " + _player.Position.Y + " Z: " + _player.Position.Z;
@@ -157,6 +157,16 @@ namespace GameObjects.GameLogic
                 Destroy(_closestBuilding);
             }
             
+        }
+        private void Tick()
+        {
+            if(_tickTime>TICK_RATE)
+            {
+                _textManager.Edit(_copperText, $"%copper%:{_player.Inventory.GetCount(ResourceType.CopperOre)}");
+                _textManager.Edit(_leadText, $"%lead%:{_player.Inventory.GetCount(ResourceType.LeadOre)}");
+                _tickTime -= TICK_RATE;
+            }
+            _tickTime += _timeHelper.DeltaT;
         }
         private Building? GetClosestBuilding()
         {
@@ -187,7 +197,7 @@ namespace GameObjects.GameLogic
             if(_inputHandler.SelectionChanged) {
                 _inputHandler.SelectionChanged = false;
                 _menu.SetSelectedCell(_inputHandler.HotbarSelection);
-                _building = EntityFactory.CreateBuilding(_inputHandler.HotbarSelection, new Copper(0));
+                _building = EntityFactory.CreateBuilding(_inputHandler.HotbarSelection, new CopperOre(0));
             }
             float xstep = 0;
             float ystep = 0;
@@ -238,10 +248,12 @@ namespace GameObjects.GameLogic
             }
             _renderer.SetBuilding(false);
             _renderer.SetSelected(false);
+            _directX3DGraphics.DisableDepthTest();
             foreach (var conveyor in _buildings.OfType<Conveyor>())
             {
                 _renderer.RenderConveyorTiles(conveyor, viewMatrix, projectionMatrix);
             }
+            _directX3DGraphics.EnableDepthTest();
             _renderer.SetMain(true);
             if (IsBuildable(_building))
             {
@@ -294,16 +306,12 @@ namespace GameObjects.GameLogic
                 if (entity is IRotatable ro)
                     rot = ro.GetAngle();
                 entity = EntityFactory.CreateBuilding(entity, GetPerspectiveResource(entity), rot);
-                entity.Activate();
-                ChangeCollisionMap(entity, false);
+                entity.Activate(_buildingMap);
+                ChangeCollisionAndBuildingMap(entity, false);
                 //_entityMap![(int)entity.Position.Y, (int)entity.Position.X] = entity;
                 _buildings.Add(entity);
-                if (entity is IPassable conveyor)
-                {
-                    conveyor.BindNextEntities(_buildingMap);
-                }
                 //_entity = new Core(_loader, new Vector2(0, 0));
-                _building = EntityFactory.CreateBuilding(_inputHandler.HotbarSelection, new Copper(0));
+                _building = EntityFactory.CreateBuilding(_inputHandler.HotbarSelection, new CopperOre(0));
                 if (_building is IRotatable rot1 && entity is IRotatable rot2)
                 {
                     rot1.SetAngle(rot2.GetAngle());
@@ -319,11 +327,11 @@ namespace GameObjects.GameLogic
                 _player.Inventory+=entity.Cost;
                 //_entityMap[(int)entity.Position.Y, (int)entity.Position.X] = null;
                 _buildings.Remove(entity);
-                ChangeCollisionMap(entity, true);
+                ChangeCollisionAndBuildingMap(entity, true);
                 entity.Dispose();
             }
         }
-        private void ChangeCollisionMap(Building entity, bool value)
+        private void ChangeCollisionAndBuildingMap(Building entity, bool value)
         {
             for (int i = (int)entity.Position.Y - (int)entity.Size.X / 2; i < (int)entity.Position.Y + entity.Size[0] / 2; i++)
                 for (int j = (int)entity.Position.X - (int)entity.Size.X / 2; j < (int)entity.Position.X + entity.Size[0] / 2; j++)

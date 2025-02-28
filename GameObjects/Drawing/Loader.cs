@@ -7,12 +7,10 @@ namespace GameObjects.Drawing
 {
     public class Loader : IDisposable
     {
-        private DirectX3DGraphics _directX3DGraphics;
+        private DirectX3DGraphics _directX3DGraphics = DirectX3DGraphics.Instance;
 
-        public Loader(DirectX3DGraphics directX3DGraphics)
-        {
-            _directX3DGraphics = directX3DGraphics;
-        }
+        public Loader()
+        {}
         public MeshObject MakeMenuTile(float aspect,float size,Vector2 position)
         {
             float aspectX;
