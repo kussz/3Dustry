@@ -68,31 +68,13 @@ namespace GameObjects.Drawing
             _resTextures.Add(type, TextureLoader.GetResourceTexture(_graphics!, type));
             return _resTextures[type];
         }
-        private static Dictionary<Tile, string> _tileTexturePaths = new Dictionary<Tile, string>
-        {
-            { Tile.Sand, "Assets/Tiles/sand.png"},
-            { Tile.BlackSand, "Assets/Tiles/sand2.png"},
-            { Tile.Copper, "Assets/Tiles/Copper.png"},
-            { Tile.Lead, "Assets/Tiles/Lead.png"},
-        };
-        private static Dictionary<ResourceType, string> _resTexturePaths = new Dictionary<ResourceType, string>
-        {
-            { ResourceType.CopperOre, "Assets/Resources/CopperOre.png"},
-            { ResourceType.LeadOre, "Assets/Resources/LeadOre.png"},
-        };
-        private static Dictionary<EntityType, string> _entityTexturePaths = new Dictionary<EntityType, string>
-        {
-            {EntityType.Core,"Assets/Entities/Core"},
-            {EntityType.Miner,"Assets/Entities/Miner"},
-            {EntityType.Conveyor,"Assets/Entities/Conveyor" },
-            {EntityType.Furnace,"Assets/Entities/Furnace" },
-        };
         public static string GetTexturePath(Tile key)
-        { return _tileTexturePaths[key]; }
+        { return $"Assets/Tiles/{Enum.GetName(key)}.png"; }
         public static string GetTexturePath(ResourceType key)
-        { return _resTexturePaths[key]; }
+        { return $"Assets/Resources/{Enum.GetName(key)}.png"; }
+
         public static string GetTexturePath(EntityType key)
-        { return _entityTexturePaths[key]; }
-        public static int Types { get { return _tileTexturePaths.Count; } }
+        { return $"Assets/Entities/{Enum.GetName(key)}"; }
+
     }
 }
