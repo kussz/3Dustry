@@ -1,4 +1,5 @@
 ﻿using GameObjects.Drawing;
+using GameObjects.Entities.Buildings.Abstract;
 using GameObjects.GameLogic;
 using GameObjects.Interfaces;
 using GameObjects.Resources;
@@ -12,7 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace GameObjects.Entities
+namespace GameObjects.Entities.Buildings.Concrete
 {
     public class Conveyor : Building, IRotatable, IPassable
     {
@@ -23,9 +24,9 @@ namespace GameObjects.Entities
         public List<ResourceTile> Resources { get; set; } = new List<ResourceTile>();
         public bool CanProgress(int i)
         {
-            if(i==0)
+            if (i == 0)
             {
-                if (NextEntities.Count>0&& NextEntities[0] is Conveyor con && con.Resources.Count > 0)
+                if (NextEntities.Count > 0 && NextEntities[0] is Conveyor con && con.Resources.Count > 0)
                 {
                     // Вычисляем значение counting
                     var counting = con.Resources.Last().Progress + 50 - Resources[0].Progress;
@@ -42,12 +43,12 @@ namespace GameObjects.Entities
             }
             else
             {
-                return (Resources[i - 1].Progress - PADDING >= Resources[i].Progress);
+                return Resources[i - 1].Progress - PADDING >= Resources[i].Progress;
             }
         }
         protected override void TickWork()
         {
-            
+
         }
         protected override void IntervalWork()
         {
@@ -70,20 +71,20 @@ namespace GameObjects.Entities
             base.Build();
             BindNextEntities(_map);
         }
-        public List<Building> NextEntities {  get; set; }
-        public Conveyor(Vector2 position,TextureHolder textureHolder,int rot) :base(position,new Vector2(1,0.5f),500,textureHolder)
+        public List<Building> NextEntities { get; set; }
+        public Conveyor(Vector2 position, TextureHolder textureHolder, int rot) : base(position, new Vector2(1, 0.5f), 500, textureHolder)
         {
             Cost = new Inventory(new CopperOre(2));
             SetAngle(rot);
             NextEntities = new List<Building>();
-            Type=EntityType.Conveyor;
+            Type = EntityType.Conveyor;
             //foreach (var res in Resources)
             //    res.Mesh.YawBy((float)Math.PI);
             Initialize();
         }
-        public void Pass(ResourceTile resource,int progress)
+        public void Pass(ResourceTile resource, int progress)
         {
-            if(NextEntities.Count>0 && NextEntities[0] is Conveyor conv)
+            if (NextEntities.Count > 0 && NextEntities[0] is Conveyor conv)
             {
                 conv.Resources.Add(resource);
                 Resources.Remove(resource);
@@ -91,19 +92,19 @@ namespace GameObjects.Entities
             }
             else if (NextEntities.Count > 0 && NextEntities[0] is IAcceptor acceptor)
             {
-                if(acceptor.Get(resource.LogicResource))
-                Resources.Remove(resource);
-                
+                if (acceptor.Get(resource.LogicResource))
+                    Resources.Remove(resource);
+
             }
         }
         public void SetAngle(int angle)
         {
-            _angle = angle-1;
+            _angle = angle - 1;
             Rotate();
         }
         public void SetMaxProgress(int progress)
         {
-            _nextState=progress;
+            _nextState = progress;
         }
         public int GetAngle()
         {
@@ -112,7 +113,7 @@ namespace GameObjects.Entities
         public void Rotate()
         {
             _angle += 1;
-            if (_angle >= 4 || _angle<0)
+            if (_angle >= 4 || _angle < 0)
                 _angle = 0;
             float angleaspect = _angle * (float)Math.PI / 2;
             Mesh.YawBy(angleaspect);
@@ -144,34 +145,34 @@ namespace GameObjects.Entities
                 conv.SetNext(entities);
 
         }
-        internal override void SetNext(Building[,]entities)
+        internal override void SetNext(Building[,] entities)
         {
             Vector2 vec = GetDirection();
             NextEntities.Clear();
             _maxProgress = 50;
-            if((int)Position.Y + (int)vec.Y<entities.GetLength(0)&&
-                (int)Position.X + (int)vec.X < entities.GetLength(1)&&
-                (int)Position.Y + (int)vec.Y >=0 &&
-                (int)Position.X + (int)vec.X >=0)
-            if (entities[(int)Position.Y + (int)vec.Y, (int)Position.X + (int)vec.X] is Conveyor con && con.IsBuilt)
-            {
-                NextEntities.Clear();
-                NextEntities.Add(con);
-                Vector2 vec2 = con.GetDirection();
-                _nextState = 50;
-                if (vec2 == vec)
+            if ((int)Position.Y + (int)vec.Y < entities.GetLength(0) &&
+                (int)Position.X + (int)vec.X < entities.GetLength(1) &&
+                (int)Position.Y + (int)vec.Y >= 0 &&
+                (int)Position.X + (int)vec.X >= 0)
+                if (entities[(int)Position.Y + (int)vec.Y, (int)Position.X + (int)vec.X] is Conveyor con && con.IsBuilt)
+                {
+                    NextEntities.Clear();
+                    NextEntities.Add(con);
+                    Vector2 vec2 = con.GetDirection();
+                    _nextState = 50;
+                    if (vec2 == vec)
+                    {
+                        _maxProgress = 100;
+                    }
+                    else if (vec2.X != -vec.X && vec2.Y != -vec.Y)
+                        _maxProgress = 100;
+
+                }
+                else if (entities[(int)Position.Y + (int)vec.Y, (int)Position.X + (int)vec.X] is Building b && b is IAcceptor acceptor && b.IsBuilt)
                 {
                     _maxProgress = 100;
+                    NextEntities.Add(acceptor as Building);
                 }
-                else if (vec2.X != -vec.X && vec2.Y != -vec.Y)
-                    _maxProgress = 100;
-
-            }
-            else if(entities[(int)Position.Y + (int)vec.Y, (int)Position.X + (int)vec.X] is Building b && b is IAcceptor acceptor && b.IsBuilt)
-            {
-                _maxProgress = 100;
-                NextEntities.Add(acceptor as Building);
-            }
         }
         public Vector2 GetDirection()
         {

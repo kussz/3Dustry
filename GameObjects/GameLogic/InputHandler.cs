@@ -20,8 +20,9 @@ namespace GameObjects.GameLogic
         public bool Right { get; private set; }
         public bool Forward { get; private set; }
         public bool Backward { get; private set; }
-        public bool LeftMouseClick { get; private set; }
-        public bool RightMouseClick { get; private set; }
+        public bool ContLeftMouseClick { get; private set; }
+        public bool ContRightMouseClick { get; private set; }
+        public bool DiscLeftMouseClick { get; private set; }
         public bool Up { get; private set; }
         public bool Down { get; private set; }
         public bool Shift { get; private set; }
@@ -49,7 +50,7 @@ namespace GameObjects.GameLogic
 
         public void Update()
         {
-            LeftMouseClick = false;
+            ContLeftMouseClick = false;
             prevTime = newTime;
             newTime = Environment.TickCount;
             // Обновляем состояние клавиатуры
@@ -106,10 +107,13 @@ namespace GameObjects.GameLogic
                     break; // Выход из цикла после обнаружения нажатия
                 }
             }
-
             MouseState state = mouse.GetCurrentState();
-            LeftMouseClick = state.Buttons[0]; // 0 - левая кнопка мыши
-            RightMouseClick = state.Buttons[1]; // 0 - левая кнопка мыши
+            if (state.Buttons[0] && !ContLeftMouseClick)
+                DiscLeftMouseClick = true;
+            else
+                DiscLeftMouseClick = false;
+            ContLeftMouseClick = state.Buttons[0]; // 0 - левая кнопка мыши
+            ContRightMouseClick = state.Buttons[1]; // 0 - левая кнопка мыши
             //if (isMouseButtonDown && !_wasMouseButtonDown)
             //{
             //    LeftMouseClick = true; // Считаем щелчком, если кнопка была нажата сейчас

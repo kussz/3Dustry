@@ -12,9 +12,10 @@ using SharpDX.Direct3D;
 using Buffer11 = SharpDX.Direct3D11.Buffer;
 using Device11 = SharpDX.Direct3D11.Device;
 using SharpDX.Windows;
-using GameObjects.Entities;
 using SharpDX.DirectWrite;
 using SharpDX.Direct2D1.Effects;
+using GameObjects.Entities.Buildings.Abstract;
+using GameObjects.Entities.Buildings.Concrete;
 
 namespace GameObjects.Drawing
 {

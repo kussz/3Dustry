@@ -1,4 +1,5 @@
 ﻿using GameObjects.Drawing;
+using GameObjects.Entities.Buildings.Concrete;
 using GameObjects.GameLogic;
 using GameObjects.Interfaces;
 using SharpDX;
@@ -9,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameObjects.Entities
+namespace GameObjects.Entities.Buildings.Abstract
 {
     public abstract class Building : Entity
     {
@@ -19,18 +20,18 @@ namespace GameObjects.Entities
             Speed = speed;
             IsBuilt = false;
             Size = size;
-            Mesh = _loader.MakeCube(new SharpDX.Vector4(Position.X, 0, Position.Y, 1), size, 0, 0, 0);
+            Mesh = _loader.MakeCube(new Vector4(Position.X, 0, Position.Y, 1), size, 0, 0, 0);
             TextureHolder = textureHolder;
         }
-        
+
         public int State { get; set; }
         private float _maxProgress;
         protected void Initialize()
         {
             _maxProgress = 30 * (float)Math.Sqrt(Cost.GetItemsCount());
         }
-        public float BuildProgress { get { return (float)_buildProgress / _maxProgress * Size.Y; } }
-        public float _buildProgress=0;
+        public float BuildProgress { get { return _buildProgress / _maxProgress * Size.Y; } }
+        public float _buildProgress = 0;
         private bool _activated = false;
         public Vector2 Size { get; set; }
         public bool IsBuilt { get; private set; }
@@ -72,20 +73,20 @@ namespace GameObjects.Entities
                 if (!list.Contains(e2))
                     list.Add(e2);
             }
-            return list.Where(b=>b!=null).ToList();
+            return list.Where(b => b != null).ToList();
         }
         internal virtual void SetNext(Building[,] entities)
         {
             var list = GetAligned(entities);
             var newlist = new List<Building>();
-            foreach(var b in list)
+            foreach (var b in list)
             {
-                if(b is Conveyor con)
+                if (b is Conveyor con)
                 {
-                    if ((con.GetDirection().X == Math.Sign(Position.X - con.Position.X)&& Math.Abs(Position.X - con.Position.X)>Size.X/2) ||
-                        (con.GetDirection().Y == Math.Sign(Position.Y - con.Position.Y) && Math.Abs(Position.Y - con.Position.Y) > Size.X / 2))
+                    if (con.GetDirection().X == Math.Sign(Position.X - con.Position.X) && Math.Abs(Position.X - con.Position.X) > Size.X / 2 ||
+                        con.GetDirection().Y == Math.Sign(Position.Y - con.Position.Y) && Math.Abs(Position.Y - con.Position.Y) > Size.X / 2)
                         continue;
-                   
+
                 }
                 newlist.Add(b);
             }
@@ -94,9 +95,9 @@ namespace GameObjects.Entities
         }
         public async void Produce(float deltaT)
         {
-            if(_activated)
+            if (_activated)
             {
-                if(IsBuilt)
+                if (IsBuilt)
                 {
                     Cooldown -= deltaT * Speed * 30f;
                     TickWork();
@@ -108,13 +109,13 @@ namespace GameObjects.Entities
                 }
                 else
                 {
-                    _buildProgress += 50f *deltaT;
-                    if(_buildProgress>=_maxProgress)
+                    _buildProgress += 50f * deltaT;
+                    if (_buildProgress >= _maxProgress)
                     {
                         Build();
                     }
                 }
-                
+
             }
         }
         protected abstract void IntervalWork();
@@ -150,7 +151,7 @@ namespace GameObjects.Entities
             }
 
             // Проверка по оси Y
-            float tyMin = (-origin.Y) / direction.Y;
+            float tyMin = -origin.Y / direction.Y;
             float tyMax = (Size.Y - origin.Y) / direction.Y;
 
             if (tyMin > tyMax)

@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using GameObjects.Drawing;
 using GameObjects.Entities;
+using GameObjects.Entities.Buildings.Abstract;
+using GameObjects.Entities.Buildings.Concrete;
 using GameObjects.Interfaces;
 using GameObjects.Resources;
 using SharpDX;
@@ -92,7 +94,7 @@ namespace GameObjects.GameLogic
             _oreCompound = mapLoader.GetCompoundMap(_fullMap[1], 0f);
             //TextureStorage.SetTextureHolder(EntityType.Miner, new TextureHolder(_directX3DGraphics.Device, "Assets\\Entities\\Miner\\"));
             // Создаем начальную сущность
-            _building = EntityFactory.CreateBuilding(1, new CopperOre(0));
+            _building = BuildingFactory.CreateBuilding(1, new CopperOre(0));
             //_entity = new Core(_loader, new Vector2(0, 0));
             _player.Position = new Vector4(_fullMap[0].GetLength(0) / 2, 5.0f, _fullMap[0].GetLength(1) / 2, 1.0f);
             _timeHelper.Update();
@@ -127,31 +129,47 @@ namespace GameObjects.GameLogic
                 return;
             }
             _timeHelper.Update();
-            //AlignCursorToCenter();
+            AlignCursorToCenter();
             ProceedInputs();
             Tick();
             //_renderForm.Text = "FPS: " + _timeHelper.FPS.ToString();
             //_renderForm.Text = _timeHelper.DeltaT.ToString();
-            _renderForm.Text = "X: " + _player.Position.X + " Y: " + _player.Position.Y + " Z: " + _player.Position.Z;
+            _renderForm.Text = "3Dustry";
 
             
             
             Vector3 hitPoint = _player.Camera.IntersectRayWithPlane(40f, 0);
-            Vector3 hitPointDiscrete = new Vector3((float)Math.Round(hitPoint.X-_building.Size.X/2%1)+ _building.Size.X / 2 % 1, 0, (float)Math.Round(hitPoint.Z - _building.Size.X / 2 % 1)+ _building.Size.X / 2 % 1);
-            _building.Mesh.MoveTo(hitPointDiscrete);
+            Vector2 hitPointDiscrete;
+            if (_building != null)
+            {
+                hitPointDiscrete = new Vector2((float)Math.Round(hitPoint.X - _building.Size.X / 2 % 1) + _building.Size.X / 2 % 1, (float)Math.Round(hitPoint.Z - _building.Size.X / 2 % 1) + _building.Size.X / 2 % 1);
+                _building.Mesh.MoveTo(hitPointDiscrete.X, 0, hitPointDiscrete.Y);
+            }
+            else
+                hitPointDiscrete = new Vector2((float)Math.Round(hitPoint.X), (float)Math.Round(hitPoint.Z));
             _closestBuilding = GetClosestBuilding();
 
             Render(_player.Camera.GetViewMatrix(), _player.Camera.GetProjectionMatrix());
 
-
-            if (_inputHandler.LeftMouseClick && IsBuildable(_building))
+            if(_building != null)
             {
-                Build(_building);
+                if (_inputHandler.ContLeftMouseClick && IsBuildable(_building))
+                {
+                    Build(_building);
+                }
+                if (_inputHandler.ContRightMouseClick)
+                {
+                    Destroy(_closestBuilding);
+                }
             }
-            if (_inputHandler.RightMouseClick)
+            else
             {
-                Destroy(_closestBuilding);
+                if(_inputHandler.DiscLeftMouseClick)
+                {
+                    _player.ChangeDrilling(_fullMap[1][(int)hitPointDiscrete.Y, (int)hitPointDiscrete.X], hitPointDiscrete);
+                }
             }
+            _player.Drill(_timeHelper.DeltaT);
             
         }
         private void Tick()
@@ -212,7 +230,7 @@ namespace GameObjects.GameLogic
             if(_inputHandler.SelectionChanged) {
                 _inputHandler.SelectionChanged = false;
                 _menu.SetSelectedCell(_inputHandler.HotbarSelection);
-                _building = EntityFactory.CreateBuilding(_inputHandler.HotbarSelection, new CopperOre(0));
+                _building = BuildingFactory.CreateBuilding(_inputHandler.HotbarSelection, new CopperOre(0));
             }
             float xstep = 0;
             float ystep = 0;
@@ -276,13 +294,15 @@ namespace GameObjects.GameLogic
                 
 
             }
-            
-            _renderer.SetMain(true);
-            if (IsBuildable(_building))
+            if(_building!=null)
             {
-                _renderer.RenderEntity(_building, viewMatrix, projectionMatrix,false, _timeHelper.DeltaT);
+                _renderer.SetMain(true);
+                if (IsBuildable(_building))
+                {
+                    _renderer.RenderEntity(_building, viewMatrix, projectionMatrix,false, _timeHelper.DeltaT);
+                }
+                _renderer.SetMain(false);
             }
-            _renderer.SetMain(false);
             _renderer.SetSelected(false);
             float aspect = (float)_renderForm.ClientSize.Width / _renderForm.ClientSize.Height;
             _renderer.RenderMenuItem(_menu.Hotbar,aspect);
@@ -329,13 +349,13 @@ namespace GameObjects.GameLogic
                 int rot = 0;
                 if (entity is IRotatable ro)
                     rot = ro.GetAngle();
-                entity = EntityFactory.CreateBuilding(entity, GetPerspectiveResource(entity), rot);
+                entity = BuildingFactory.CreateBuilding(entity, GetPerspectiveResource(entity), rot);
                 entity.Activate(_buildingMap);
                 ChangeCollisionAndBuildingMap(entity, false);
                 //_entityMap![(int)entity.Position.Y, (int)entity.Position.X] = entity;
                 _buildings.Add(entity);
                 //_entity = new Core(_loader, new Vector2(0, 0));
-                _building = EntityFactory.CreateBuilding(_inputHandler.HotbarSelection, new CopperOre(0));
+                _building = BuildingFactory.CreateBuilding(_inputHandler.HotbarSelection, new CopperOre(0));
                 if (_building is IRotatable rot1 && entity is IRotatable rot2)
                 {
                     rot1.SetAngle(rot2.GetAngle());

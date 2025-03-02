@@ -1,5 +1,5 @@
 ﻿using GameObjects.Drawing;
-using GameObjects.Entities;
+using GameObjects.Entities.Buildings.Abstract;
 using GameObjects.GameLogic;
 using System;
 using System.Collections.Generic;

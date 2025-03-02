@@ -1,10 +1,11 @@
 ﻿using GameObjects.Drawing;
+using GameObjects.Entities.Buildings.Abstract;
 using GameObjects.GameLogic;
 using GameObjects.Interfaces;
 using GameObjects.Resources;
 using SharpDX;
 
-namespace GameObjects.Entities
+namespace GameObjects.Entities.Buildings.Concrete
 {
     public class Core : Building, IAcceptor
     {
@@ -18,16 +19,10 @@ namespace GameObjects.Entities
         }
         public bool Get(GameResource resource)
         {
-            if (Inventory.Add(resource))
-            {
-                Player.GetInstance().Inventory.Add(resource);
-                return true;
-            }
-            return false;
+            return Player.GetInstance().Inventory.Add(resource);
         }
         public bool Get(Inventory inv)
         {
-            Inventory += inv;
             Player.GetInstance().Inventory += inv;
             return true;
         }
