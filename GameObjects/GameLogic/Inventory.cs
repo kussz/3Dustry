@@ -14,12 +14,15 @@ namespace GameObjects.GameLogic
         public Inventory(params GameResource[] resources)
         {
             _resources = [.. resources];
+<<<<<<< HEAD
         }
         public int Count { get => _resources.Count; }
         public IEnumerator<GameResource> GetEnumerator()
         {
             foreach (var contact in _resources)
                 yield return contact;
+=======
+>>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
         }
         public int GetItemsCount()
         {

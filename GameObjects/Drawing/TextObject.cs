@@ -101,6 +101,9 @@ namespace GameObjects.Drawing
             var asp = 2 - Size;
             return _textPos.Y - asp;
         }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
     }
 }

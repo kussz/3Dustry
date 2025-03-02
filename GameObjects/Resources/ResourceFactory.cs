@@ -29,7 +29,26 @@ namespace GameObjects.Resources
         {
             if (_tileMakers.TryGetValue(tileType, out var createFunc))
             {
+<<<<<<< HEAD
                 return createFunc(quantity);
+=======
+                case Tile.Copper:
+                    return new CopperOre(quantity);
+                case Tile.Lead: return new LeadOre(quantity);
+                default:
+                    return null;
+            }
+        }
+        public static GameResource CreateResource(ResourceType resType, int quantity)
+        {
+            switch (resType)
+            {
+                case ResourceType.CopperOre:
+                    return new CopperOre(quantity);
+                case ResourceType.LeadOre: return new LeadOre(quantity);
+                default:
+                    return null;
+>>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
             }
 
             return null;

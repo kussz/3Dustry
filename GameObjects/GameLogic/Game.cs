@@ -42,7 +42,12 @@ namespace GameObjects.GameLogic
         private Renderer _renderer;
         private InputHandler _inputHandler;
         private TimeHelper _timeHelper;
+<<<<<<< HEAD
         private List<TextObject> _playerResourcesText;
+=======
+        private TextObject _copperText;
+        private TextObject _leadText;
+>>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
         private TextObject _loadingText;
         private bool _isDataLoaded = false;
         public RenderForm MainForm { get { return _renderForm; } }
@@ -60,8 +65,16 @@ namespace GameObjects.GameLogic
             // Создание рендера
             _renderer = new Renderer();
             _renderer.CreateConstantBuffer();
+<<<<<<< HEAD
             _loader = Loader.GetInstance();
             //_menu = _loader.MakeTileSquare(new Vector4(0, 0, 0, 1));
+=======
+            _loader = new Loader();
+            //_menu = _loader.MakeTileSquare(new Vector4(0, 0, 0, 1));
+            MenuTile.Configure(_loader, _directX3DGraphics.Device);
+            ResourceTile.Configure(_loader);
+            Entity.Configure(_loader);
+>>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
             _menu = new Menu();
             // Вспомогательные компоненты
             _inputHandler = new InputHandler();
@@ -69,9 +82,15 @@ namespace GameObjects.GameLogic
 
             // Создание базовой камеры
             _player = Player.GetInstance();
+<<<<<<< HEAD
             _textManager = new TextManager();
             //_playerResourcesText.Add(_textManager.LoadText($"%copperore%:{Player.GetInstance().Inventory.GetCount(ResourceType.CopperOre)}", new Vector2(0, 1), 1,"lt"));
             //_playerResourcesText.Add(_textManager.LoadText($"%leadore%:{Player.GetInstance().Inventory.GetCount(ResourceType.LeadOre)}", new Vector2(0, 2), 1,"lt"));
+=======
+            _textManager = new TextManager(_directX3DGraphics);
+            _copperText = _textManager.LoadText("%copper%:", new Vector2(0, 19), 1,"lt");
+            _leadText = _textManager.LoadText("%lead%:", new Vector2(0, 39), 1,"lt");
+>>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
             _loadingText = _textManager.LoadText("загрузка...", new Vector2(0, 0), 1, "cc");
             // Таймер
             _timeHelper = new TimeHelper();
@@ -94,7 +113,11 @@ namespace GameObjects.GameLogic
             _oreCompound = mapLoader.GetCompoundMap(_fullMap[1], 0f);
             //TextureStorage.SetTextureHolder(EntityType.Miner, new TextureHolder(_directX3DGraphics.Device, "Assets\\Entities\\Miner\\"));
             // Создаем начальную сущность
+<<<<<<< HEAD
             _building = BuildingFactory.CreateBuilding(1, new CopperOre(0));
+=======
+            _building = EntityFactory.CreateBuilding(1, new CopperOre(0));
+>>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
             //_entity = new Core(_loader, new Vector2(0, 0));
             _player.Position = new Vector4(_fullMap[0].GetLength(0) / 2, 5.0f, _fullMap[0].GetLength(1) / 2, 1.0f);
             _timeHelper.Update();
@@ -129,16 +152,21 @@ namespace GameObjects.GameLogic
                 return;
             }
             _timeHelper.Update();
-            AlignCursorToCenter();
+            //AlignCursorToCenter();
             ProceedInputs();
             Tick();
             //_renderForm.Text = "FPS: " + _timeHelper.FPS.ToString();
             //_renderForm.Text = _timeHelper.DeltaT.ToString();
+<<<<<<< HEAD
             _renderForm.Text = "3Dustry";
+=======
+            _renderForm.Text = "X: " + _player.Position.X + " Y: " + _player.Position.Y + " Z: " + _player.Position.Z;
+>>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
 
             
             
             Vector3 hitPoint = _player.Camera.IntersectRayWithPlane(40f, 0);
+<<<<<<< HEAD
             Vector2 hitPointDiscrete;
             if (_building != null)
             {
@@ -147,6 +175,10 @@ namespace GameObjects.GameLogic
             }
             else
                 hitPointDiscrete = new Vector2((float)Math.Round(hitPoint.X), (float)Math.Round(hitPoint.Z));
+=======
+            Vector3 hitPointDiscrete = new Vector3((float)Math.Round(hitPoint.X-_building.Size.X/2%1)+ _building.Size.X / 2 % 1, 0, (float)Math.Round(hitPoint.Z - _building.Size.X / 2 % 1)+ _building.Size.X / 2 % 1);
+            _building.Mesh.MoveTo(hitPointDiscrete);
+>>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
             _closestBuilding = GetClosestBuilding();
 
             Render(_player.Camera.GetViewMatrix(), _player.Camera.GetProjectionMatrix());
@@ -176,6 +208,7 @@ namespace GameObjects.GameLogic
         {
             if(_tickTime>TICK_RATE)
             {
+<<<<<<< HEAD
                 int count = _playerResourcesText.Count;
                 for (int j=0;j<(_player.Inventory.Count-count);j++)
                 {
@@ -197,6 +230,10 @@ namespace GameObjects.GameLogic
                     _textManager.Edit(_playerResourcesText[i], $"%{Enum.GetName(res.Type)}%:{res.Quantity}");
                     i++;
                 }
+=======
+                _textManager.Edit(_copperText, $"%copper%:{_player.Inventory.GetCount(ResourceType.CopperOre)}");
+                _textManager.Edit(_leadText, $"%lead%:{_player.Inventory.GetCount(ResourceType.LeadOre)}");
+>>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
                 _tickTime -= TICK_RATE;
             }
             _tickTime += _timeHelper.DeltaT;
@@ -230,7 +267,11 @@ namespace GameObjects.GameLogic
             if(_inputHandler.SelectionChanged) {
                 _inputHandler.SelectionChanged = false;
                 _menu.SetSelectedCell(_inputHandler.HotbarSelection);
+<<<<<<< HEAD
                 _building = BuildingFactory.CreateBuilding(_inputHandler.HotbarSelection, new CopperOre(0));
+=======
+                _building = EntityFactory.CreateBuilding(_inputHandler.HotbarSelection, new CopperOre(0));
+>>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
             }
             float xstep = 0;
             float ystep = 0;
@@ -273,9 +314,16 @@ namespace GameObjects.GameLogic
             _renderer.SetBuilding(true);
             foreach (var conveyor in _buildings.OfType<Conveyor>())
             {
+<<<<<<< HEAD
                 conveyor.Produce(_timeHelper.DeltaT);
                 _renderer.RenderEntity(conveyor, viewMatrix, projectionMatrix, conveyor == _closestBuilding, _timeHelper.DeltaT);
                 //_renderer.RenderConveyorTiles(conveyor, viewMatrix, projectionMatrix);
+=======
+                entity.Produce(_timeHelper.DeltaT);
+                _renderer.RenderEntity(entity, viewMatrix, projectionMatrix, entity == _closestBuilding,_timeHelper.DeltaT);
+                
+
+>>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
             }
             _renderer.SetBuilding(false);
             _renderer.SetSelected(false);
@@ -285,6 +333,7 @@ namespace GameObjects.GameLogic
                 _renderer.RenderConveyorTiles(conveyor, viewMatrix, projectionMatrix);
             }
             _directX3DGraphics.EnableDepthTest();
+<<<<<<< HEAD
             _renderer.SetBuilding(true);
 
             foreach (var entity in _buildings.Where(i=>!(i is Conveyor)))
@@ -302,14 +351,25 @@ namespace GameObjects.GameLogic
                     _renderer.RenderEntity(_building, viewMatrix, projectionMatrix,false, _timeHelper.DeltaT);
                 }
                 _renderer.SetMain(false);
+=======
+            _renderer.SetMain(true);
+            if (IsBuildable(_building))
+            {
+                _renderer.RenderEntity(_building, viewMatrix, projectionMatrix,false, _timeHelper.DeltaT);
+>>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
             }
             _renderer.SetSelected(false);
             float aspect = (float)_renderForm.ClientSize.Width / _renderForm.ClientSize.Height;
             _renderer.RenderMenuItem(_menu.Hotbar,aspect);
             _renderer.RenderMenuItem(_menu.SelectedCell,aspect);
             _renderer.RenderMenuItem(_menu.CrossHair,aspect);
+<<<<<<< HEAD
             foreach(var text in _playerResourcesText)
                 _renderer.RenderText(text, aspect);
+=======
+            _renderer.RenderText(_copperText, aspect);
+            _renderer.RenderText(_leadText, aspect);
+>>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
             _renderer.EndRender();
             TextureHolder.Update(_timeHelper.DeltaT);
         }
@@ -343,19 +403,31 @@ namespace GameObjects.GameLogic
         }
         private void Build(Building entity)
         {
+<<<<<<< HEAD
             if (_player.Inventory >= entity.Cost)
+=======
+            //if (_player.Inventory >= entity.Cost)
+>>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
             {
                 _player.Inventory -= entity.Cost;
                 int rot = 0;
                 if (entity is IRotatable ro)
                     rot = ro.GetAngle();
+<<<<<<< HEAD
                 entity = BuildingFactory.CreateBuilding(entity, GetPerspectiveResource(entity), rot);
+=======
+                entity = EntityFactory.CreateBuilding(entity, GetPerspectiveResource(entity), rot);
+>>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
                 entity.Activate(_buildingMap);
                 ChangeCollisionAndBuildingMap(entity, false);
                 //_entityMap![(int)entity.Position.Y, (int)entity.Position.X] = entity;
                 _buildings.Add(entity);
                 //_entity = new Core(_loader, new Vector2(0, 0));
+<<<<<<< HEAD
                 _building = BuildingFactory.CreateBuilding(_inputHandler.HotbarSelection, new CopperOre(0));
+=======
+                _building = EntityFactory.CreateBuilding(_inputHandler.HotbarSelection, new CopperOre(0));
+>>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
                 if (_building is IRotatable rot1 && entity is IRotatable rot2)
                 {
                     rot1.SetAngle(rot2.GetAngle());

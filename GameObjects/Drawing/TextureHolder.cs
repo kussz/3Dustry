@@ -11,12 +11,17 @@ namespace GameObjects.Drawing
     public class TextureHolder
     {
         public ShaderResourceView[][]? Textures;
+<<<<<<< HEAD
         private static List<float> _frames;
         private static float _frameNext;
         private static float _framePrev;
         public TextureHolder(Device device, string path)
         {
             _frames = [0];
+=======
+        public TextureHolder(Device device, string path)
+        {
+>>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
             List<List<ShaderResourceView>> textureBank;// = new List<ShaderResourceView> ();
             try
             {
@@ -25,7 +30,11 @@ namespace GameObjects.Drawing
                 textureBank = new List<List<ShaderResourceView>>();
                 foreach (string dir in dirs)
                 {
+<<<<<<< HEAD
                     List<ShaderResourceView> list = new List<ShaderResourceView>();
+=======
+                    List <ShaderResourceView> list = new List<ShaderResourceView>();
+>>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
                     string[] files = Directory.GetFiles(dir);
                     foreach (string file in files)
                     {
@@ -33,17 +42,24 @@ namespace GameObjects.Drawing
                     }
                     textureBank.Add(list);
                 }
+<<<<<<< HEAD
                 Textures = textureBank.Select(list => list.ToArray()).ToArray();
 
 
+=======
+                Textures = textureBank.Select(list=>list.ToArray()).ToArray();
+
+                
+>>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Произошла ошибка: {ex.Message}");
             }
         }
-        public static void Update(float DeltaT)
+        public ShaderResourceView GetCurrentFrame(TextureMetaData data, float DeltaT)
         {
+<<<<<<< HEAD
             _framePrev = _frameNext;
             _frameNext += DeltaT * 10;
             _frameNext %= 1000;
@@ -61,6 +77,12 @@ namespace GameObjects.Drawing
                 _frames.Add(0);
             var frame = _frames[state] % Textures[state].Length;
             return Textures[state][(int)frame];
+=======
+            data.Frame += (DeltaT * 10)%1000;
+            data.Frame%=Textures[data.State].Length;
+            //_frameLocal = _frameGlobal;
+            return Textures[data.State][(int)data.Frame];
+>>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
         }
     }
 }

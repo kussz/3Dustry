@@ -191,6 +191,7 @@
     <None Update="Assets\Menu\Selected.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+<<<<<<< HEAD
     <None Update="Assets\Resources\CoalOre.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -209,6 +210,14 @@
     <None Update="Assets\Tiles\Coal.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+=======
+    <None Update="Assets\Resources\CopperOre.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\Resources\LeadOre.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+>>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
     <None Update="Assets\Tiles\Copper.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
