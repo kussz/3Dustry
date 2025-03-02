@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace GameObjects.Entities
 {
@@ -17,7 +18,6 @@ namespace GameObjects.Entities
         public KeyValuePair<Inventory, Inventory>? CurrentRecipe { get; set; }
         public float ConvertionProgress { get; set; }
 
-        public ResourceType[] Acceptings { get; }
         private int _nextEntity = 0;
 
         public Dictionary<Inventory,Inventory> Recipes {  get; set; }
@@ -34,51 +34,83 @@ namespace GameObjects.Entities
         public bool IsWorking { get; set; } = false;
         public Furnace(Vector2 position, TextureHolder textureHolder) : base(position, new Vector2(2, 2f), 1, textureHolder)
         {
+            NextEntities = new List<Building>();
             Type = EntityType.Furnace;
-            Metadata.State = 1;
+            State = 1;
             Cost = new Inventory(new CopperOre(10), new LeadOre(30));
             Output = new Inventory();
             Inventory.MaxItems = 10;
             Output.MaxItems = 10;
             Recipes = new Dictionary<Inventory, Inventory>()
             {
-                { new Inventory(new CopperOre(1)),new Inventory(new LeadOre(1)) }
+                { new Inventory(new CopperOre(2),new CoalOre(1)),new Inventory(new Copper(2)) },
+                { new Inventory(new LeadOre(2),new CoalOre(1)),new Inventory(new Lead(2)) },
+
             };
             Initialize();
 
         }
         public void EndWork()
         {
-            SetWorking(false);
+            if ((this as IConvertor).CheckAvailable() == null)
+                State = 1;
+            IsWorking = false;
             ConvertionProgress = 0;
             Output += CurrentRecipe.Value.Value;
         }
-        public void SetWorking(bool isWorking)
-        {
-            IsWorking=isWorking;
-            Metadata.State = Convert.ToInt32(!isWorking);
-        }
-        protected override void Act()
+        protected override void TickWork()
         {
             if (!IsWorking)
             {
                 CurrentRecipe = (this as IConvertor).CheckAvailable();
-                if(CurrentRecipe!=null)
+                if (CurrentRecipe != null)
                 {
-                    SetWorking(true);
+                    IsWorking=true;
+                    State = 0;
                     Inventory.Subtract(CurrentRecipe.Value.Key);
                 }
             }
+            else if (IsWorking)
+            {
+                ConvertionProgress += Speed;
+                if (ConvertionProgress >= 100)
+                {
+                    EndWork();
+                }
+            }
             var f = Output.GetFirst();
-            if(f!=null)
+            if (f != null && f.Quantity > 0)
             {
                 var newer = ResourceFactory.CreateResource(f.Type, 1);
-                Output.Subtract(newer);
                 ResourceTile tile = new ResourceTile(newer);
-                if(NextEntities.Count>0)
+                if (NextEntities.Count > 0)
                     Pass(tile);
             }
+
+        }
+        protected override void IntervalWork()
+        {
+            
+            
                 
+        }
+        public bool CanProgress()
+        {
+            
+            if (NextEntities.Count > 0 && NextEntities[_nextEntity] is Conveyor con && con.Resources.Count > 0)
+            {
+                // Вычисляем значение counting
+                var counting = con.Resources.Last().Progress;
+
+                // Проверяем условие
+                if (counting > Conveyor.PADDING)
+                {
+                    return true;
+                }
+                else
+                    return false;
+            }
+            return true;
         }
         public void Pass(ResourceTile tile, int progress = 25)
         {
@@ -88,9 +120,12 @@ namespace GameObjects.Entities
             }
             if (NextEntities[_nextEntity] is Conveyor con)
             {
-                tile.Progress = progress;
-                con.Resources.Add(tile);
-                Inventory.Subtract(tile.LogicResource);
+                if(CanProgress())
+                {
+                    tile.Progress = progress;
+                    con.Resources.Add(tile);
+                    Output.Subtract(tile.LogicResource);
+                }
             }
             _nextEntity++;
 

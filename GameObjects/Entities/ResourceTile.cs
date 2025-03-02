@@ -12,12 +12,7 @@ namespace GameObjects.Entities
 {
     public class ResourceTile
     {
-        private static Loader _loader;
-
-        public static void Configure(Loader loader)
-        {
-            _loader = loader;
-        }
+        private static Loader _loader = Loader.GetInstance();
         public float Progress { get; set; } = 0;
         public void AddProgress(float progress)
         {

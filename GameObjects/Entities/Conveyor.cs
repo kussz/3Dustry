@@ -45,17 +45,21 @@ namespace GameObjects.Entities
                 return (Resources[i - 1].Progress - PADDING >= Resources[i].Progress);
             }
         }
-        protected override void Act()
+        protected override void TickWork()
         {
-            if (Resources.Count>0&& Resources[0].Progress >= 100)
+            
+        }
+        protected override void IntervalWork()
+        {
+            if (Resources.Count > 0 && Resources[0].Progress >= 100)
             {
-                Pass(Resources[0],_nextState);
+                Pass(Resources[0], _nextState);
             }
             Vector2 vec = GetDirection();
-            for(int i=0;i<Resources.Count; i++)
+            for (int i = 0; i < Resources.Count; i++)
             {
                 var res = Resources[i];
-                if (res.Progress < _maxProgress&&CanProgress(i))
+                if (res.Progress < _maxProgress && CanProgress(i))
                     res.AddProgress(1);
 
                 res.Mesh.MoveTo(Position.X - vec.X + vec.X * res.Progress / 50f, 0.55f, Position.Y - vec.Y + vec.Y * res.Progress / 50f);
@@ -149,7 +153,7 @@ namespace GameObjects.Entities
                 (int)Position.X + (int)vec.X < entities.GetLength(1)&&
                 (int)Position.Y + (int)vec.Y >=0 &&
                 (int)Position.X + (int)vec.X >=0)
-            if (entities[(int)Position.Y + (int)vec.Y, (int)Position.X + (int)vec.X] is Conveyor con)
+            if (entities[(int)Position.Y + (int)vec.Y, (int)Position.X + (int)vec.X] is Conveyor con && con.IsBuilt)
             {
                 NextEntities.Clear();
                 NextEntities.Add(con);
@@ -163,7 +167,7 @@ namespace GameObjects.Entities
                     _maxProgress = 100;
 
             }
-            else if(entities[(int)Position.Y + (int)vec.Y, (int)Position.X + (int)vec.X] is IAcceptor acceptor)
+            else if(entities[(int)Position.Y + (int)vec.Y, (int)Position.X + (int)vec.X] is Building b && b is IAcceptor acceptor && b.IsBuilt)
             {
                 _maxProgress = 100;
                 NextEntities.Add(acceptor as Building);

@@ -40,8 +40,7 @@ namespace GameObjects.GameLogic
         private Renderer _renderer;
         private InputHandler _inputHandler;
         private TimeHelper _timeHelper;
-        private TextObject _copperText;
-        private TextObject _leadText;
+        private List<TextObject> _playerResourcesText;
         private TextObject _loadingText;
         private bool _isDataLoaded = false;
         public RenderForm MainForm { get { return _renderForm; } }
@@ -52,18 +51,15 @@ namespace GameObjects.GameLogic
         {
             _renderForm = new RenderForm("My Game");
             _renderForm.UserResized += RenderFormResizedCallback;
-
+            _playerResourcesText=new List<TextObject>();
             // Инициализация графической системы
             DirectX3DGraphics.Load(_renderForm);
             _directX3DGraphics = DirectX3DGraphics.Instance;
             // Создание рендера
-            _renderer = new Renderer(_directX3DGraphics);
+            _renderer = new Renderer();
             _renderer.CreateConstantBuffer();
-            _loader = new Loader();
+            _loader = Loader.GetInstance();
             //_menu = _loader.MakeTileSquare(new Vector4(0, 0, 0, 1));
-            MenuTile.Configure(_loader, _directX3DGraphics.Device);
-            ResourceTile.Configure(_loader);
-            Entity.Configure(_loader);
             _menu = new Menu();
             // Вспомогательные компоненты
             _inputHandler = new InputHandler();
@@ -71,9 +67,9 @@ namespace GameObjects.GameLogic
 
             // Создание базовой камеры
             _player = Player.GetInstance();
-            _textManager = new TextManager(_directX3DGraphics);
-            _copperText = _textManager.LoadText("%copper%:", new Vector2(0, 19), 1,"lt");
-            _leadText = _textManager.LoadText("%lead%:", new Vector2(0, 39), 1,"lt");
+            _textManager = new TextManager();
+            //_playerResourcesText.Add(_textManager.LoadText($"%copperore%:{Player.GetInstance().Inventory.GetCount(ResourceType.CopperOre)}", new Vector2(0, 1), 1,"lt"));
+            //_playerResourcesText.Add(_textManager.LoadText($"%leadore%:{Player.GetInstance().Inventory.GetCount(ResourceType.LeadOre)}", new Vector2(0, 2), 1,"lt"));
             _loadingText = _textManager.LoadText("загрузка...", new Vector2(0, 0), 1, "cc");
             // Таймер
             _timeHelper = new TimeHelper();
@@ -162,8 +158,27 @@ namespace GameObjects.GameLogic
         {
             if(_tickTime>TICK_RATE)
             {
-                _textManager.Edit(_copperText, $"%copper%:{_player.Inventory.GetCount(ResourceType.CopperOre)}");
-                _textManager.Edit(_leadText, $"%lead%:{_player.Inventory.GetCount(ResourceType.LeadOre)}");
+                int count = _playerResourcesText.Count;
+                for (int j=0;j<(_player.Inventory.Count-count);j++)
+                {
+                    _playerResourcesText.Add(_textManager.LoadText("А", new Vector2(0, _playerResourcesText.Count + 1), 1, "lt"));
+                }
+                for (int j = 0; j < (count-_player.Inventory.Count); j++)
+                {
+                    var text = _playerResourcesText.LastOrDefault();
+                    if(text!= null)
+                    {
+                        _playerResourcesText.Remove(text);
+                        text.Dispose();
+                        
+                    }
+                }
+                int i = 0;
+                foreach(var res in _player.Inventory)
+                {
+                    _textManager.Edit(_playerResourcesText[i], $"%{Enum.GetName(res.Type)}%:{res.Quantity}");
+                    i++;
+                }
                 _tickTime -= TICK_RATE;
             }
             _tickTime += _timeHelper.DeltaT;
@@ -238,12 +253,11 @@ namespace GameObjects.GameLogic
             _renderer.RenderCompound(_oreCompound,viewMatrix,projectionMatrix);
             _directX3DGraphics.EnableDepthTest();
             _renderer.SetBuilding(true);
-            foreach (var entity in _buildings)
+            foreach (var conveyor in _buildings.OfType<Conveyor>())
             {
-                entity.Produce(_timeHelper.DeltaT);
-                _renderer.RenderEntity(entity, viewMatrix, projectionMatrix, entity == _closestBuilding,_timeHelper.DeltaT);
-                
-
+                conveyor.Produce(_timeHelper.DeltaT);
+                _renderer.RenderEntity(conveyor, viewMatrix, projectionMatrix, conveyor == _closestBuilding, _timeHelper.DeltaT);
+                //_renderer.RenderConveyorTiles(conveyor, viewMatrix, projectionMatrix);
             }
             _renderer.SetBuilding(false);
             _renderer.SetSelected(false);
@@ -253,6 +267,16 @@ namespace GameObjects.GameLogic
                 _renderer.RenderConveyorTiles(conveyor, viewMatrix, projectionMatrix);
             }
             _directX3DGraphics.EnableDepthTest();
+            _renderer.SetBuilding(true);
+
+            foreach (var entity in _buildings.Where(i=>!(i is Conveyor)))
+            {
+                entity.Produce(_timeHelper.DeltaT);
+                _renderer.RenderEntity(entity, viewMatrix, projectionMatrix, entity == _closestBuilding,_timeHelper.DeltaT);
+                
+
+            }
+            
             _renderer.SetMain(true);
             if (IsBuildable(_building))
             {
@@ -264,9 +288,10 @@ namespace GameObjects.GameLogic
             _renderer.RenderMenuItem(_menu.Hotbar,aspect);
             _renderer.RenderMenuItem(_menu.SelectedCell,aspect);
             _renderer.RenderMenuItem(_menu.CrossHair,aspect);
-            _renderer.RenderText(_copperText, aspect);
-            _renderer.RenderText(_leadText, aspect);
+            foreach(var text in _playerResourcesText)
+                _renderer.RenderText(text, aspect);
             _renderer.EndRender();
+            TextureHolder.Update(_timeHelper.DeltaT);
         }
         public void Run()
         {
@@ -298,7 +323,7 @@ namespace GameObjects.GameLogic
         }
         private void Build(Building entity)
         {
-            //if (_player.Inventory >= entity.Cost)
+            if (_player.Inventory >= entity.Cost)
             {
                 _player.Inventory -= entity.Cost;
                 int rot = 0;

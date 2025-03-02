@@ -15,6 +15,12 @@ namespace GameObjects.GameLogic
         {
             _resources = [.. resources];
         }
+        public int Count { get => _resources.Count; }
+        public IEnumerator<GameResource> GetEnumerator()
+        {
+            foreach (var contact in _resources)
+                yield return contact;
+        }
         public int GetItemsCount()
         {
             return _resources.Sum(o => o.Quantity);

@@ -10,16 +10,12 @@ namespace GameObjects.Drawing
 {
     public class MenuTile
     {
-        private static Loader? _loader;
-        private static Device? _device;
-        public static void Configure(Loader loader,Device device)
-        {
-            _device = device;
-            _loader = loader;
-        }
+        private static Loader? _loader = Loader.GetInstance();
+        private static Device? _device = DirectX3DGraphics.Instance.Device;
         public MeshObject Mesh;
         public MenuTile(string path,float size,Vector2 position)
         {
+            
             var bitmap = TextureLoader.LoadBitmap(path);
             var texture = TextureLoader.CreateTexture2DFromBitmap(_device!, bitmap);
 

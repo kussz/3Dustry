@@ -57,9 +57,9 @@ namespace GameObjects.Drawing
         private PerObjectConstantBuffer _perObjectConstantBuffer;
         private Buffer11? _perObjectConstantBufferObject;
 
-        public Renderer(DirectX3DGraphics directX3DGraphics)
+        public Renderer()
         {
-            _directX3DGraphics = directX3DGraphics;
+            _directX3DGraphics = DirectX3DGraphics.Instance;
             _device = _directX3DGraphics.Device;
             _deviceContext = _directX3DGraphics.DeviceContext;
             CompilationResult vertexShaderByteCode =
@@ -198,7 +198,7 @@ namespace GameObjects.Drawing
         {
             SetSelected(isSelected);
             SetTransparent(building.BuildProgress);
-            _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, building.TextureHolder.GetCurrentFrame(building.Metadata,DeltaT));
+            _directX3DGraphics.DeviceContext.PixelShader.SetShaderResources(0, building.TextureHolder.GetCurrentFrame(building.State));
             UpdatePerObjectConstantBuffers(building.Mesh.GetWorldMatrix(),
                 viewMatrix, projectionMatrix);
             RenderMeshObject(building.Mesh);

@@ -18,8 +18,7 @@ namespace GameObjects.Entities
         private Player()
         {
             Camera = new Camera(new Vector4(0, 5.0f, 0, 1.0f));
-            Inventory = new Inventory();
-            Inventory.Add(ResourceFactory.CreateResource(Drawing.Tile.Copper,40));
+            Inventory = new Inventory(new CopperOre(140),new LeadOre(130));
         }
         public static Player GetInstance()
         {

@@ -16,7 +16,8 @@ namespace GameObjects.Drawing
             {"#D2AE8D",Tile.Sand },
             {"#3C3838",Tile.BlackSand },
             {"#AE7C5B",Tile.Copper },
-            {"#8E85A2",Tile.Lead }
+            {"#8E85A2",Tile.Lead },
+            {"#242424", Tile.Coal },
         };
         //private static Dictionary<EntityType, TextureMetaData> _syncMetaDatas
         private static Dictionary<EntityType, TextureHolder> _entityTextures = new Dictionary<EntityType, TextureHolder>();

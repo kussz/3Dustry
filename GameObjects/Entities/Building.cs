@@ -16,7 +16,6 @@ namespace GameObjects.Entities
         protected Building[,] _map;
         public Building(Vector2 position, Vector2 size, float speed, TextureHolder textureHolder) : base(position)
         {
-            Metadata = new TextureMetaData();
             Speed = speed;
             IsBuilt = false;
             Size = size;
@@ -24,7 +23,7 @@ namespace GameObjects.Entities
             TextureHolder = textureHolder;
         }
         
-        public TextureMetaData Metadata { get; set; }
+        public int State { get; set; }
         private float _maxProgress;
         protected void Initialize()
         {
@@ -45,10 +44,10 @@ namespace GameObjects.Entities
         }
         public virtual void Build()
         {
+            IsBuilt = true;
             foreach (var b in GetAligned(_map))
                 b.SetNext(_map);
             Position = new Vector2(Mesh.Position.X, Mesh.Position.Z);
-            IsBuilt = true;
             //_buildProgress = Int32.MaxValue;
         }
         private List<Building> GetAligned(Building[,] entities)
@@ -100,10 +99,11 @@ namespace GameObjects.Entities
                 if(IsBuilt)
                 {
                     Cooldown -= deltaT * Speed * 30f;
+                    TickWork();
                     if (Cooldown <= 0)
                     {
                         Cooldown = 100;
-                        Act();
+                        IntervalWork();
                     }
                 }
                 else
@@ -114,17 +114,11 @@ namespace GameObjects.Entities
                         Build();
                     }
                 }
-                if(this is IConvertor convertor && convertor.IsWorking)
-                {
-                    convertor.ConvertionProgress++;
-                    if(convertor.ConvertionProgress>=100)
-                    {
-                        convertor.EndWork();
-                    }
-                }
+                
             }
         }
-        protected abstract void Act();
+        protected abstract void IntervalWork();
+        protected abstract void TickWork();
         public Vector3 IntersectWithLook(Camera camera, float distance)
         {
             Vector3 lookDirection = new Vector3(
@@ -232,6 +226,7 @@ namespace GameObjects.Entities
         {
             foreach (var b in GetAligned(_map))
                 b.SetNext(_map);
+            Mesh.Dispose();
             base.Dispose();
         }
 

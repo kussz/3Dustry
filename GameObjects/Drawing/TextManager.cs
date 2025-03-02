@@ -26,9 +26,9 @@ namespace GameObjects.Drawing
 
         }
         private Metadata _md;
-        public TextManager(DirectX3DGraphics directX3DGraphics)
+        public TextManager()
         {
-            _graphics = directX3DGraphics;
+            _graphics = DirectX3DGraphics.Instance;
             _letters = TextureStorage.GetTextTile();
             _md = new Metadata();
         }
@@ -36,8 +36,10 @@ namespace GameObjects.Drawing
         {
             _textpadding = textpadding;
             size /= 10;
+            float aspect = (float)_md.letterHeight / _md.letterWidth;
             var asp = (float)_graphics.RenderForm.ClientSize.Width / _graphics.RenderForm.ClientSize.Height;
-            position = new Vector2(position.X/100,1-position.Y/100-size);
+            //position = new Vector2(position.X/100,1-position.Y/100-size);
+            position = new Vector2(size*position.X*_textpadding,1-size*(position.Y+1));
             (var vertices, var indices, var result) = SetText(text,size);
             var textob =  new TextObject(_graphics, new Vector4(position.X-asp, position.Y, 0, 1), 0, 0, 0, vertices.ToArray(), indices.ToArray(),_letters,position,align,result,size,textpadding);
             textob.Align();
@@ -94,15 +96,11 @@ namespace GameObjects.Drawing
                     }
                     else
                     {
-                        int a = 0;
-                        switch (insider)
+                        ResourceType type;
+                        int a=0;
+                        if (Enum.TryParse(insider,true, out type))
                         {
-                            case "COPPER":
-                                a = 0;
-                                break;
-                            case "LEAD":
-                                a = 1;
-                                break;
+                            a=(int)type;
                         }
                         i = ((float)a % 3 + 11) / _md.fullWidth;
                         j = (a / 3) / (float)_md.fullHeight;

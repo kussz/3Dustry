@@ -8,8 +8,14 @@ namespace GameObjects.Drawing
     public class Loader : IDisposable
     {
         private DirectX3DGraphics _directX3DGraphics = DirectX3DGraphics.Instance;
-
-        public Loader()
+        private static Loader _instance;
+        public static Loader GetInstance()
+        {
+            if(_instance==null)
+                _instance = new Loader();
+            return _instance;
+        }
+        private Loader()
         {}
         public MeshObject MakeMenuTile(float aspect,float size,Vector2 position)
         {

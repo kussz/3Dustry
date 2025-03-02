@@ -15,7 +15,7 @@ namespace GameObjects.Entities
         public List<Building> NextEntities {  get; set; }
         private int _nextEntity = 0;
         private GameResource _resource;
-        public Miner(Vector2 position, GameResource resource,TextureHolder textureHolder):base(position,new Vector2(2,3),resource==null?0:resource.Quantity,textureHolder)
+        public Miner(Vector2 position, GameResource resource,TextureHolder textureHolder):base(position,new Vector2(2,3),resource==null?0:resource.Quantity/2f,textureHolder)
         {
             Cost = new GameLogic.Inventory(new CopperOre(20));
             Type=EntityType.Miner;
@@ -24,21 +24,27 @@ namespace GameObjects.Entities
             NextEntities = new List<Building>();
             Initialize();
         }
-        protected override void Act()
+        protected override void IntervalWork()
         {
             Inventory.Add(ResourceFactory.CreateResource(_resource.Type,1));
-            Player.GetInstance().Inventory.Add(ResourceFactory.CreateResource(_resource.Type, 1));
-            if(NextEntities.Count > 0)
+            
+        }
+        protected override void TickWork()
+        {
+            if(_resource!=null)
             {
-                if (_nextEntity >= NextEntities.Count)
+                if (NextEntities.Count > 0 && Inventory.GetCount(_resource.Type)>0)
                 {
-                    _nextEntity %= NextEntities.Count;
+                    if (_nextEntity >= NextEntities.Count)
+                    {
+                        _nextEntity %= NextEntities.Count;
+                    }
+                    Pass(new ResourceTile(Inventory.GetResource(_resource.Type)));
                 }
-                Pass(new ResourceTile(Inventory.GetResource(_resource.Type)));
             }
         }
-        
-        
+
+
         public void Pass(ResourceTile tile,int progress = 25)
         {
             if (NextEntities[_nextEntity] is Conveyor con)

@@ -4,14 +4,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Windows.Forms.AxHost;
 
 namespace GameObjects.Drawing
 {
     public class TextureHolder
     {
         public ShaderResourceView[][]? Textures;
+        private static List<float> _frames;
+        private static float _frameNext;
+        private static float _framePrev;
         public TextureHolder(Device device, string path)
         {
+            _frames = [0];
             List<List<ShaderResourceView>> textureBank;// = new List<ShaderResourceView> ();
             try
             {
@@ -20,7 +25,7 @@ namespace GameObjects.Drawing
                 textureBank = new List<List<ShaderResourceView>>();
                 foreach (string dir in dirs)
                 {
-                    List <ShaderResourceView> list = new List<ShaderResourceView>();
+                    List<ShaderResourceView> list = new List<ShaderResourceView>();
                     string[] files = Directory.GetFiles(dir);
                     foreach (string file in files)
                     {
@@ -28,21 +33,34 @@ namespace GameObjects.Drawing
                     }
                     textureBank.Add(list);
                 }
-                Textures = textureBank.Select(list=>list.ToArray()).ToArray();
+                Textures = textureBank.Select(list => list.ToArray()).ToArray();
 
-                
+
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Произошла ошибка: {ex.Message}");
             }
         }
-        public ShaderResourceView GetCurrentFrame(TextureMetaData data, float DeltaT)
+        public static void Update(float DeltaT)
         {
-            data.Frame += (DeltaT * 10)%1000;
-            data.Frame%=Textures[data.State].Length;
-            //_frameLocal = _frameGlobal;
-            return Textures[data.State][(int)data.Frame];
+            _framePrev = _frameNext;
+            _frameNext += DeltaT * 10;
+            _frameNext %= 1000;
+            if (_framePrev > _frameNext)
+                _framePrev -= 1000;
+            for (int i=0;i<_frames.Count;i++)
+            {
+                _frames[i] += (_frameNext - _framePrev)%1000;
+            }
+
+        }
+        public ShaderResourceView GetCurrentFrame(int state)
+        {
+            if (state >= _frames.Count)
+                _frames.Add(0);
+            var frame = _frames[state] % Textures[state].Length;
+            return Textures[state][(int)frame];
         }
     }
 }

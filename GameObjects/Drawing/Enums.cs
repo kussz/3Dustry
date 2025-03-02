@@ -12,7 +12,8 @@ namespace GameObjects.Drawing
         Sand,
         BlackSand,
         Copper,
-        Lead
+        Lead,
+        Coal
     }
     public enum EntityType
     {
@@ -26,7 +27,8 @@ namespace GameObjects.Drawing
     {
         CopperOre,
         LeadOre,
+        CoalOre,
         Copper,
-        Lead
+        Lead,
     }
 }

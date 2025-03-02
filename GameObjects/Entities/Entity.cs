@@ -12,11 +12,7 @@ namespace GameObjects.Entities
 {
     public abstract class Entity : IDisposable
     {
-        protected static Loader _loader;
-        public static void Configure(Loader loader)
-        {
-            _loader = loader;
-        }
+        protected static Loader _loader = Loader.GetInstance();
         public float Cooldown { get; set; } = 100f;
         public float Speed { get; set; }
         public TextureHolder TextureHolder { get; set; }
