@@ -26,15 +26,9 @@ namespace GameObjects.Drawing
 
         }
         private Metadata _md;
-<<<<<<< HEAD
         public TextManager()
         {
             _graphics = DirectX3DGraphics.Instance;
-=======
-        public TextManager(DirectX3DGraphics directX3DGraphics)
-        {
-            _graphics = directX3DGraphics;
->>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
             _letters = TextureStorage.GetTextTile();
             _md = new Metadata();
         }
@@ -42,15 +36,10 @@ namespace GameObjects.Drawing
         {
             _textpadding = textpadding;
             size /= 10;
-<<<<<<< HEAD
             float aspect = (float)_md.letterHeight / _md.letterWidth;
             var asp = (float)_graphics.RenderForm.ClientSize.Width / _graphics.RenderForm.ClientSize.Height;
             //position = new Vector2(position.X/100,1-position.Y/100-size);
             position = new Vector2(size*position.X*_textpadding,1-size*(position.Y+1));
-=======
-            var asp = (float)_graphics.RenderForm.ClientSize.Width / _graphics.RenderForm.ClientSize.Height;
-            position = new Vector2(position.X/100,1-position.Y/100-size);
->>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
             (var vertices, var indices, var result) = SetText(text,size);
             var textob =  new TextObject(_graphics, new Vector4(position.X-asp, position.Y, 0, 1), 0, 0, 0, vertices.ToArray(), indices.ToArray(),_letters,position,align,result,size,textpadding);
             textob.Align();
@@ -107,23 +96,11 @@ namespace GameObjects.Drawing
                     }
                     else
                     {
-<<<<<<< HEAD
                         ResourceType type;
                         int a=0;
                         if (Enum.TryParse(insider,true, out type))
                         {
                             a=(int)type;
-=======
-                        int a = 0;
-                        switch (insider)
-                        {
-                            case "COPPER":
-                                a = 0;
-                                break;
-                            case "LEAD":
-                                a = 1;
-                                break;
->>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
                         }
                         i = ((float)a % 3 + 11) / _md.fullWidth;
                         j = (a / 3) / (float)_md.fullHeight;

@@ -1,9 +1,5 @@
 ﻿using GameObjects.Drawing;
-<<<<<<< HEAD
 using GameObjects.Entities.Buildings.Abstract;
-=======
-using GameObjects.Entities;
->>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
 using GameObjects.GameLogic;
 using System;
 using System.Collections.Generic;

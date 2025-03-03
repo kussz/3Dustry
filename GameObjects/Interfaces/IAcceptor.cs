@@ -11,10 +11,6 @@ namespace GameObjects.Interfaces
 {
     public interface IAcceptor
     {
-<<<<<<< HEAD
-=======
-        ResourceType[] Acceptings { get; }
->>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
         bool Get(GameResource resource);
         bool Get(Inventory inventory);
     }

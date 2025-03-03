@@ -10,18 +10,8 @@ namespace GameObjects.Drawing
 {
     public class MenuTile
     {
-<<<<<<< HEAD
         private static Loader? _loader = Loader.GetInstance();
         private static Device? _device = DirectX3DGraphics.Instance.Device;
-=======
-        private static Loader? _loader;
-        private static Device? _device;
-        public static void Configure(Loader loader,Device device)
-        {
-            _device = device;
-            _loader = loader;
-        }
->>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01
         public MeshObject Mesh;
         public MenuTile(string path,float size,Vector2 position)
         {

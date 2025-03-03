@@ -17,32 +17,21 @@ namespace GameObjects.Entities.Buildings.Abstract
         protected Building[,] _map;
         public Building(Vector2 position, Vector2 size, float speed, TextureHolder textureHolder) : base(position)
         {
-            Metadata = new TextureMetaData();
             Speed = speed;
             IsBuilt = false;
             Size = size;
             Mesh = _loader.MakeCube(new Vector4(Position.X, 0, Position.Y, 1), size, 0, 0, 0);
             TextureHolder = textureHolder;
         }
-<<<<<<< HEAD:GameObjects/Entities/Buildings/Abstract/Building.cs
 
         public int State { get; set; }
-=======
-        
-        public TextureMetaData Metadata { get; set; }
->>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01:GameObjects/Entities/Building.cs
         private float _maxProgress;
         protected void Initialize()
         {
             _maxProgress = 30 * (float)Math.Sqrt(Cost.GetItemsCount());
         }
-<<<<<<< HEAD:GameObjects/Entities/Buildings/Abstract/Building.cs
         public float BuildProgress { get { return _buildProgress / _maxProgress * Size.Y; } }
         public float _buildProgress = 0;
-=======
-        public float BuildProgress { get { return (float)_buildProgress / _maxProgress * Size.Y; } }
-        public float _buildProgress=0;
->>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01:GameObjects/Entities/Building.cs
         private bool _activated = false;
         public Vector2 Size { get; set; }
         public bool IsBuilt { get; private set; }
@@ -56,12 +45,6 @@ namespace GameObjects.Entities.Buildings.Abstract
         }
         public virtual void Build()
         {
-<<<<<<< HEAD:GameObjects/Entities/Buildings/Abstract/Building.cs
-=======
-            foreach (var b in GetAligned(_map))
-                b.SetNext(_map);
-            Position = new Vector2(Mesh.Position.X, Mesh.Position.Z);
->>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01:GameObjects/Entities/Building.cs
             IsBuilt = true;
             foreach (var b in GetAligned(_map))
                 b.SetNext(_map);
@@ -90,17 +73,12 @@ namespace GameObjects.Entities.Buildings.Abstract
                 if (!list.Contains(e2))
                     list.Add(e2);
             }
-<<<<<<< HEAD:GameObjects/Entities/Buildings/Abstract/Building.cs
             return list.Where(b => b != null).ToList();
-=======
-            return list.Where(b=>b!=null).ToList();
->>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01:GameObjects/Entities/Building.cs
         }
         internal virtual void SetNext(Building[,] entities)
         {
             var list = GetAligned(entities);
             var newlist = new List<Building>();
-<<<<<<< HEAD:GameObjects/Entities/Buildings/Abstract/Building.cs
             foreach (var b in list)
             {
                 if (b is Conveyor con)
@@ -108,17 +86,6 @@ namespace GameObjects.Entities.Buildings.Abstract
                     if (con.GetDirection().X == Math.Sign(Position.X - con.Position.X) && Math.Abs(Position.X - con.Position.X) > Size.X / 2 ||
                         con.GetDirection().Y == Math.Sign(Position.Y - con.Position.Y) && Math.Abs(Position.Y - con.Position.Y) > Size.X / 2)
                         continue;
-
-=======
-            foreach(var b in list)
-            {
-                if(b is Conveyor con)
-                {
-                    if ((con.GetDirection().X == Math.Sign(Position.X - con.Position.X)&& Math.Abs(Position.X - con.Position.X)>Size.X/2) ||
-                        (con.GetDirection().Y == Math.Sign(Position.Y - con.Position.Y) && Math.Abs(Position.Y - con.Position.Y) > Size.X / 2))
-                        continue;
-                   
->>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01:GameObjects/Entities/Building.cs
                 }
                 newlist.Add(b);
             }
@@ -141,29 +108,12 @@ namespace GameObjects.Entities.Buildings.Abstract
                 }
                 else
                 {
-<<<<<<< HEAD:GameObjects/Entities/Buildings/Abstract/Building.cs
                     _buildProgress += 50f * deltaT;
                     if (_buildProgress >= _maxProgress)
-=======
-                    _buildProgress += 50f *deltaT;
-                    if(_buildProgress>=_maxProgress)
->>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01:GameObjects/Entities/Building.cs
                     {
                         Build();
                     }
                 }
-<<<<<<< HEAD:GameObjects/Entities/Buildings/Abstract/Building.cs
-
-=======
-                if(this is IConvertor convertor && convertor.IsWorking)
-                {
-                    convertor.ConvertionProgress++;
-                    if(convertor.ConvertionProgress>=100)
-                    {
-                        convertor.EndWork();
-                    }
-                }
->>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01:GameObjects/Entities/Building.cs
             }
         }
         protected abstract void IntervalWork();
@@ -275,10 +225,7 @@ namespace GameObjects.Entities.Buildings.Abstract
         {
             foreach (var b in GetAligned(_map))
                 b.SetNext(_map);
-<<<<<<< HEAD:GameObjects/Entities/Buildings/Abstract/Building.cs
             Mesh.Dispose();
-=======
->>>>>>> 478e56b3c91a0692ab06e996ec5a31f79e259c01:GameObjects/Entities/Building.cs
             base.Dispose();
         }
 
